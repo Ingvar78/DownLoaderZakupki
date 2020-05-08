@@ -39,8 +39,8 @@ namespace DownLoaderZakupki
 
             services.Configure<CommonSettings>(x => configuration.GetSection("CommonSettings").Bind(x));
             services.Configure<ConnectionDB>(x => configuration.GetSection("ConnectionDB").Bind(x));
-            services.Configure<FZSettings44>(x => configuration.GetSection("FZSettings44").Bind(x));
-            services.Configure<FZSettings223>(x => configuration.GetSection("FZSettings223").Bind(x));
+            services.Configure<FZSettings44>(x => configuration.GetSection("FzSettings44").Bind(x));
+            services.Configure<FZSettings223>(x => configuration.GetSection("FzSettings223").Bind(x));
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.AddLogging((conf) => conf.SetMinimumLevel(LogLevel.Trace));
