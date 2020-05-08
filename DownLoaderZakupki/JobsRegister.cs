@@ -18,7 +18,7 @@ namespace DownLoaderZakupki
 
         public JobsRegister(
             IOptions<CommonSettings> commonSettings,
-            //IOptions<ConnectionDB> connectionDB,
+            IOptions<ConnectionDB> connectionDB,
             IOptions<FZSettings44> fzSettings44,
             IOptions<FZSettings223> fzSettings223,
             ILogger<JobsRegister> logger
