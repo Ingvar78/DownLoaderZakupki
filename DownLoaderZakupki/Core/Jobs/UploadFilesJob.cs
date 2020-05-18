@@ -1,6 +1,9 @@
 ﻿using DownLoaderZakupki.Configurations;
+using DownLoaderZakupki.Core.Interfaces;
+using DownLoaderZakupki.Data.DB;
 using FluentFTP;
 using FluentScheduler;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,17 +19,20 @@ namespace DownLoaderZakupki.Core.Jobs
         private readonly CommonSettings _commonSettings;
         private readonly FZSettings44 _fzSettings44;
         private readonly FZSettings223 _fzSettings223;
+        private readonly IGovDbManager _govDb;
         private readonly ILogger _logger;
         private readonly string _path;
         public UploadFilesJob(CommonSettings commonSettings,
             FZSettings44 fzSettings44,
             FZSettings223 fzSettings223,
+            IGovDbManager govDb,
             ILogger logger
             )
         {
             _commonSettings = commonSettings;
             _fzSettings44 = fzSettings44;
             _fzSettings223 = fzSettings223;
+            _govDb = govDb;
             _logger = logger;
             _path = commonSettings.BasePath;
         }
@@ -92,9 +98,9 @@ namespace DownLoaderZakupki.Core.Jobs
                             //4. Выдать топ 100 загруженных zip но не обработанных файлов.
                             //5. Обработанные архивы фтопку. 
                             //ToDo Save ListFTP
-
-                            //Загрузка файла по региону
-                            DownloadFtpFiles44(ftpList);
+                            SaveFTPPath(ftpList, DirsDoc, basedir44, 1, 44);
+                            //Загрузка файла по региону переделать на загрузку с проверкой
+                            //DownloadFtpFiles44(ftpList);
                             _logger.LogInformation($"Создан список файлов для загрузки: { region} /{ DirsDoc} 44ФЗ");
                             client.Disconnect();
                         }
@@ -151,6 +157,67 @@ namespace DownLoaderZakupki.Core.Jobs
             _logger.LogInformation($"Загружено {fileCashes.Count} архивов FZ44 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
 
         }
+
+        private void SaveFTPPath(List<FtpListItem> ListFile, string ftpDir, string baseDir, int status, int fz)
+        {
+            foreach (FtpListItem item in ListFile)
+            {
+
+                if (!GetDBfile(item.FullName))
+                {
+                    var filesave = new FileCash();
+                    filesave.Date = item.Modified;
+                    filesave.Size = item.Size;
+                    filesave.Full_path = item.FullName;
+                    filesave.Zip_file = item.Name;
+                    filesave.BaseDir = baseDir;
+                    filesave.Dirtype = ftpDir;
+                    filesave.Fz_type = fz;
+                    filesave.Status = status;
+                    filesave.Modifid_date = DateTime.Now;
+
+                    SavePath(filesave);
+                }
+            }
+        }
+
+
+        private void SavePath(FileCash item)
+        {
+            try
+            {
+                using (var db = _govDb.GetContext())
+                {
+                    db.FileCashes.Add(item);
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+            }
+
+
+        }
+
+        bool GetDBfile(string FullPath)
+        {
+            FileCash find = null;
+
+            using (var db = _govDb.GetContext())
+            {
+                find = db.FileCashes
+                    .AsNoTracking()
+                    .Where(x => x.Full_path == FullPath)
+                    .OrderByDescending(x => x.Date)
+                    .FirstOrDefault();
+            }
+            if (find == null) return false;
+            else return true;
+        }
+
+
+
     }
 
 

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DownLoaderZakupki.Data.Access
 {
-    public class GovDbContextManager
+    public class DbContextManager
     {
         public static IGovDbContext CreateGovContext(string connectionString, ILoggerFactory loggerFactory)
         {
@@ -20,7 +20,7 @@ namespace DownLoaderZakupki.Data.Access
             }
             catch (Exception ex)
             {
-                loggerFactory.CreateLogger<GovDbContextManager>().LogCritical(ex, ex.Message);
+                loggerFactory.CreateLogger<DbContextManager>().LogCritical(ex, ex.Message);
                 throw ex;
             }
         }

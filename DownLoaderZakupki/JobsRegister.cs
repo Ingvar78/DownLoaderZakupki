@@ -1,4 +1,5 @@
 ﻿using DownLoaderZakupki.Configurations;
+using DownLoaderZakupki.Core.Interfaces;
 using DownLoaderZakupki.Core.Jobs;
 using FluentScheduler;
 using Microsoft.Extensions.Logging;
@@ -15,10 +16,10 @@ namespace DownLoaderZakupki
     internal class JobsRegister : Registry
     {
         private readonly ILogger _logger;
-
+        private readonly IGovDbManager _govDb;
         public JobsRegister(
             IOptions<CommonSettings> commonSettings,
-            IOptions<ConnectionDB> connectionDB,
+            IGovDbManager govDb,
             IOptions<FZSettings44> fzSettings44,
             IOptions<FZSettings223> fzSettings223,
             ILogger<JobsRegister> logger
@@ -37,7 +38,7 @@ namespace DownLoaderZakupki
 
             if (partUsed.UseUpload)
             {
-                Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value, logger))
+                Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value,govDb, logger))
                     .NonReentrant()
                     .ToRunNow();
             }
