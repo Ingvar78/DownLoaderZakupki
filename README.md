@@ -13,5 +13,6 @@ FluentFTP и FluentScheduler
 Установка .Net Core: 
 https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-ubuntu-1910
 https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-centos7
+
 appsettings.linux.json - конфиг для Linux
 
