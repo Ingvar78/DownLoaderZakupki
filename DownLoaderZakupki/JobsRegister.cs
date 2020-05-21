@@ -16,7 +16,6 @@ namespace DownLoaderZakupki
     internal class JobsRegister : Registry
     {
         private readonly ILogger _logger;
-        private readonly IGovDbManager _govDb;
         public JobsRegister(
             IOptions<CommonSettings> commonSettings,
             IGovDbManager govDb,
@@ -26,7 +25,7 @@ namespace DownLoaderZakupki
             )
         {
             _logger = logger;
-            _logger.LogInformation("Start Job");
+            _logger.LogInformation("Start Init Job");
 
             var partUsed = commonSettings.Value.partUsed;
             if (!Directory.Exists(commonSettings.Value.BasePath))
@@ -43,7 +42,7 @@ namespace DownLoaderZakupki
                     .ToRunNow();
             }
 
-            _logger.LogInformation("End Job");
+            _logger.LogInformation("End Init Job");
         }
 
     }

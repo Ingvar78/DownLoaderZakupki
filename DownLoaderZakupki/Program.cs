@@ -6,15 +6,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using NLog.Web;
 
+
+
 namespace DownLoaderZakupki
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var logger = NLog.Web.NLogBuilder.ConfigureNLog("nlog.config").GetCurrentClassLogger();
-
             try
             {
                 logger.Debug("init main");

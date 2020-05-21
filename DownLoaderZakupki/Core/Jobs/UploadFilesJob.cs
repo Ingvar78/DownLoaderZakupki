@@ -1,7 +1,4 @@
-﻿using DownLoaderZakupki.Configurations;
-using DownLoaderZakupki.Core.Interfaces;
-using DownLoaderZakupki.Data.DB;
-using FluentFTP;
+﻿using FluentFTP;
 using FluentScheduler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -9,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
+using DownLoaderZakupki.Configurations;
+using DownLoaderZakupki.Core.Interfaces;
+using DownLoaderZakupki.Data.DB;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
@@ -39,20 +38,24 @@ namespace DownLoaderZakupki.Core.Jobs
 
         void IJob.Execute()
         {
+            _logger.LogDebug($"Начало загрузки архивов");
             DateTime StartDateTime = DateTime.Now;
             _logger.LogInformation($"Начало загрузки архивов: {StartDateTime.ToString()}: {_path}");
 
-            try
-            {
-                Parallel.Invoke(
-                    () => { GetListFTP44(); }
-                //    () => { GetListFTP223(); }
-                    );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, ex.Message);
-            }
+            GetListFTP44();
+
+            //
+            //try
+            //{
+            //Parallel.Invoke(
+            //        () => { GetListFTP44(); }
+            //    //    () => { GetListFTP223(); }
+            //        );
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError(ex, ex.Message);
+            //}
 
 
         }
@@ -60,8 +63,8 @@ namespace DownLoaderZakupki.Core.Jobs
         private void GetListFTP44()
         {
             DateTime StartDate = DateTime.Now;
-            var basedir44 = _fzSettings44.BaseDir;
             _logger.LogInformation($"connect to ftp 44, Начало создания списка в {StartDate}"); ;
+            var basedir44 = _fzSettings44.BaseDir;
             {
 
                 FtpClient client = new FtpClient(_fzSettings44.Url)
@@ -82,6 +85,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                 foreach (string region in region44List)
                 {
+                    _logger.LogInformation($" Get {region} "); ;
                     foreach (string DirsDoc in _fzSettings44.DocDirList)
                     {
                         try
