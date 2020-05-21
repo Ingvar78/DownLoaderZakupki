@@ -9,5 +9,9 @@ FluentFTP и FluentScheduler
 1) dotnet ef migrations add InitialCreate
 2) dotnet ef database update -v
 
-# Возможен запуск на Linux 
+# Запуск на Linux 
+Установка .Net Core: 
+https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-ubuntu-1910
+https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-centos7
 appsettings.linux.json - конфиг для Linux
+
