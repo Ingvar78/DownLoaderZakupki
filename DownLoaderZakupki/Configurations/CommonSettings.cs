@@ -15,6 +15,8 @@ namespace DownLoaderZakupki.Configurations
 
         public PartUsed partUsed { get; set; }
 
+        public FtpCredential FtpCredential { get; set; }
+
     }
 
     public class PartUsed
@@ -23,5 +25,18 @@ namespace DownLoaderZakupki.Configurations
         public bool UseFz44Settings { get; set; }
         public bool UseFz223Settings { get; set; }
     }
-    
+
+    public class Credentional
+    {
+        public string Url { get; set; }
+        public string Login { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class FtpCredential
+    {
+        public Credentional FZ44 { get; set; }
+        public Credentional FZ223 { get; set; }
+    }
+
 }

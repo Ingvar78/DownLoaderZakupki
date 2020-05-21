@@ -12,9 +12,6 @@ namespace DownLoaderZakupki.Configurations
         public int Parallels { get; set; }
         public int Queue { get; set; }
         public TimeSpan RunAtTime { get; set; }
-        public string Url { get; set; }
-        public string Login { get; set; }
-        public string Password { get; set; }
         public long EmptyZipSize { get; set; }
         public string BaseDir { get; set; }
     }

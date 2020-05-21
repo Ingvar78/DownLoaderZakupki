@@ -42,20 +42,32 @@ namespace DownLoaderZakupki.Core.Jobs
             DateTime StartDateTime = DateTime.Now;
             _logger.LogInformation($"Начало загрузки архивов: {StartDateTime.ToString()}: {_path}");
 
-            GetListFTP44();
+            DownloadFtpFiles44(GetDBList(1000, 1, 44));
 
-            //
-            //try
+            Parallel.Invoke(
+                                    
+                // 1. получение списка файлов + сохранение списка для последующей загрузки
+                () => { GetListFTP44(); },
+                //2. загрузка 1000 файлов через получение списка файлов.
+                () => { DownloadFtpFiles44(GetDBList(1000, 1, 44)); }
+                ////ToDo
+                // 1. получение списка файлов + сохранение списка для последующей загрузки
+                //() => { GetListFTP223(); },
+                //2. загрузка 1000 файлов через получение списка файлов.
+                //() => { DownloadFtpFiles223(GetDBList(1000, 1, 223)); }
+                );
+
+
+            //var cnt44 = GetDBList(1000, 1, 44).Count;
+
+            //while (cnt44 > 0 )
             //{
-            //Parallel.Invoke(
-            //        () => { GetListFTP44(); }
-            //    //    () => { GetListFTP223(); }
-            //        );
+            //    //Загрузка файлов пока все не загрузит
+            //    //44ФЗ
+            //    DownloadFtpFiles44(GetDBList(1000, 1, 44)); 
+            //    cnt44 = GetDBList(1000, 1, 44).Count;
             //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError(ex, ex.Message);
-            //}
+
 
 
         }
@@ -67,9 +79,9 @@ namespace DownLoaderZakupki.Core.Jobs
             var basedir44 = _fzSettings44.BaseDir;
             {
 
-                FtpClient client = new FtpClient(_fzSettings44.Url)
+                FtpClient client = new FtpClient(_commonSettings.FtpCredential.FZ44.Url)
                 {
-                    Credentials = new NetworkCredential(_fzSettings44.Login, _fzSettings44.Password)
+                    Credentials = new NetworkCredential(_commonSettings.FtpCredential.FZ44.Login, _commonSettings.FtpCredential.FZ44.Password)
                 };
 
                 //Список регионов
@@ -119,7 +131,7 @@ namespace DownLoaderZakupki.Core.Jobs
             }
         }
 
-        private void DownloadFtpFiles44(List<FtpListItem> fileCashes)
+        private void DownloadFtpFiles44(List<FileCash> fileCashes)
         {
             DateTime StartDate = DateTime.Now;
             _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ44 {StartDate}...");
@@ -132,9 +144,9 @@ namespace DownLoaderZakupki.Core.Jobs
 
             Parallel.ForEach(fileCashes, parallelOptions, item =>
             {
-                FtpClient client = new FtpClient(_fzSettings44.Url)
+                FtpClient client = new FtpClient(_commonSettings.FtpCredential.FZ44.Url)
                 {
-                    Credentials = new NetworkCredential(_fzSettings44.Login, _fzSettings44.Password),
+                    Credentials = new NetworkCredential(_commonSettings.FtpCredential.FZ44.Login, _commonSettings.FtpCredential.FZ44.Password),
                     RetryAttempts = 5
                 };
 
@@ -143,12 +155,16 @@ namespace DownLoaderZakupki.Core.Jobs
 
                     client.Connect();
 
-                    _logger.LogInformation($"Загрузка архива FZ44 {item.FullName}...");
-                    client.DownloadFile(_fzSettings44.WorkPath + item.FullName, item.FullName);
+                    _logger.LogInformation($"Загрузка архива FZ44 {item.Full_path}...");
+                    client.DownloadFile(_fzSettings44.WorkPath + item.Full_path, item.Full_path);
+                    item.Modifid_date = DateTime.Now;
+                    item.Status = 2;
+                    UpdateCasheFiles(item);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Ошибка скачивания архива FZ44 файл перемещён или недоступен: {item.FullName}");
+                    DeleteDBfile(item);
+                    _logger.LogError(ex, $"Ошибка скачивания архива FZ44 файл перемещён или недоступен: {item.Full_path}");
                     _logger.LogError(ex, ex.Message);
                 }
                 finally
@@ -221,6 +237,39 @@ namespace DownLoaderZakupki.Core.Jobs
         }
 
 
+        List<FileCash> GetDBList(int lim, int status, int fz_type)
+        {
+            List<FileCash> data = new List<FileCash>();
+
+            using (var db = _govDb.GetContext())
+            {
+                data = db.FileCashes
+                    .AsNoTracking()
+                    .Where(x => x.Status == status && x.Fz_type == fz_type)
+                    .OrderByDescending(x => x.Date)
+                    .Take(lim)
+                    .ToList();
+            }
+            return data;
+        }
+
+
+        private void UpdateCasheFiles(FileCash fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.FileCashes.Update(fileCashes);
+                db.SaveChanges();
+            }
+        }
+        private void DeleteDBfile(FileCash fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.FileCashes.Remove(fileCashes);
+                db.SaveChanges();
+            }
+        }
 
     }
 
