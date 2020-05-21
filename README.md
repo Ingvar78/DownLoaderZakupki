@@ -4,7 +4,8 @@
 
 В проекте реализовано получение списка файлов и его загрузка с FTP с использованием
 FluentFTP и FluentScheduler
-#Для создания локальной БД воспользоваться : 
+
+# Для создания локальной БД воспользоваться : 
 1) dotnet ef migrations add InitialCreate
 2) dotnet ef database update -v
 
