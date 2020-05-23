@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using DownLoaderZakupki.Configurations;
 using DownLoaderZakupki.Core.Interfaces;
 using DownLoaderZakupki.Data.DB;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
@@ -49,27 +51,31 @@ namespace DownLoaderZakupki.Core.Jobs
                 // 1. получение списка файлов + сохранение списка для последующей загрузки
                 () => { GetListFTP44(); },
                 //2. загрузка 1000 файлов через получение списка файлов.
-                () => { DownloadFtpFiles44(GetDBList(1000, 1, 44)); }
+                () => { DownloadFtpFiles44(GetDBList(1000, 1, 44)); },
                 ////ToDo
                 // 1. получение списка файлов + сохранение списка для последующей загрузки
-                //() => { GetListFTP223(); },
+                () => { GetListFTP223(); },
                 //2. загрузка 1000 файлов через получение списка файлов.
-                //() => { DownloadFtpFiles223(GetDBList(1000, 1, 223)); }
+                () => { DownloadFtpFiles223(GetDBList(1000, 1, 223)); }
                 );
 
 
-            //var cnt44 = GetDBList(1000, 1, 44).Count;
+            var cnt44 = GetDBList(1000, 1, 44).Count;
+            var cnt223 = GetDBList(1000, 1, 223).Count;
 
-            //while (cnt44 > 0 )
-            //{
-            //    //Загрузка файлов пока все не загрузит
-            //    //44ФЗ
-            //    DownloadFtpFiles44(GetDBList(1000, 1, 44)); 
-            //    cnt44 = GetDBList(1000, 1, 44).Count;
-            //}
+            //Грузить пока не устанет
+            while (cnt44 > 0 || cnt223 > 0)
+            {
+                //2. Загрузка файлов
+                //44ФЗ/223ФЗ
+                Parallel.Invoke(
+                    () => { DownloadFtpFiles44(GetDBList(1000, 1, 44)); },
+                    () => { DownloadFtpFiles223(GetDBList(1000, 1, 223)); }
+                    );
 
-
-
+                cnt44 = GetDBList(1000, 1, 44).Count;
+                cnt223 = GetDBList(1000, 1, 223).Count;
+            }
         }
 
         private void GetListFTP44()
@@ -94,6 +100,15 @@ namespace DownLoaderZakupki.Core.Jobs
                 var ftpBasePath = $"/{basedir44}/";
                 var region44List = client.GetListing(ftpBasePath).Where(item => item.Type == FtpFileSystemObjectType.Directory).Select(x => x.Name).ToList();
                 client.Disconnect();
+                // Сохранение списка регионов
+                var dayyear = DateTime.Now.ToShortDateString();
+                var saveregions = Path.Combine(_fzSettings44.WorkPath, $"RegionsList_{dayyear}.txt");
+                var saveregionscsv = Path.Combine(_fzSettings44.WorkPath, $"RegionsList_{dayyear}.csv");
+                using (StreamWriter file = File.CreateText(saveregions))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(file, region44List);
+                }
 
                 foreach (string region in region44List)
                 {
@@ -129,6 +144,78 @@ namespace DownLoaderZakupki.Core.Jobs
                 }
 
             }
+        }
+
+
+        private void GetListFTP223()
+        {
+            DateTime StartDate = DateTime.Now;
+            var basedir223 = _fzSettings223.BaseDir;
+            _logger.LogInformation($"connect to ftp 223, Начало создания списка в {StartDate}");
+            try
+            {
+                //TODO
+                //FtpClient client = new FtpClient("ftp.zakupki.gov.ru");
+                FtpClient client = new FtpClient(_commonSettings.FtpCredential.FZ223.Url)
+                {
+                    Credentials = new NetworkCredential(_commonSettings.FtpCredential.FZ223.Login, _commonSettings.FtpCredential.FZ223.Password)
+                };
+
+                //Список регионов
+                //Дата модификации/создания
+                DateTime ModDate = DateTime.ParseExact(_commonSettings.StartDate, "yyyy-MM-dd",
+                                           System.Globalization.CultureInfo.InvariantCulture);
+
+                client.Connect();
+                var ftpBasePath = $"{basedir223}";
+                var region223List = client.GetListing(ftpBasePath).Where(item => item.Type == FtpFileSystemObjectType.Directory).Select(x => x.Name).ToList();
+                client.Disconnect();
+                var dayyear = DateTime.Now.ToShortDateString();
+                var saveregions = Path.Combine(_fzSettings223.WorkPath, $"RegionsList_{dayyear}.txt");
+                var saveregionscsv = Path.Combine(_fzSettings223.WorkPath, $"RegionsList_{dayyear}.csv");
+                using (StreamWriter file = File.CreateText(saveregions))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    serializer.Serialize(file, region223List);
+                }
+
+                //foreach (string region in _fz223Settings.RegionsList)
+                foreach (string region in region223List)
+                {
+                    foreach (string DirsDoc in _fzSettings223.DocDirList)
+                    {
+                        try
+                        {
+                            client.Connect();
+                            //_logger.LogInformation("connect to ftp 223, region for download: " + region);
+                            var ftpPath = $"{basedir223}/{region}/{DirsDoc}/";
+                            var fileList = client.GetListing(ftpPath, FtpListOption.Recursive);
+                            var ftpList = fileList.Where(item => item.Size > _fzSettings223.EmptyZipSize && item.Type == FtpFileSystemObjectType.File && item.Modified > ModDate).ToList();
+                            //ToDo Реализовать обработку списка файлов, через кэширование записей. 
+                            //1. Загрузить список файлов. 
+                            //2. проверить загружался ли, если нет загружаем. 
+                            //3. выдать топ 100 файлов на загрузку 
+                            //4. Выдать топ 100 загруженных zip но не обработанных файлов.
+                            //5. Обработанные архивы фтопку. 
+                            //ToDo Save ListFTP
+                            SaveFTPPath(ftpList, DirsDoc, basedir223, 1, 223);
+                            _logger.LogInformation($"Создан список файлов для загрузки: {region} /{DirsDoc} 223ФЗ");
+                            client.Disconnect();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogInformation($"Ошибка создания списка файлов для загрузки: { region} /{ DirsDoc} 223ФЗ");
+                            _logger.LogError(ex, ex.Message);
+                        }
+                    }
+                } //end foreach regions
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message);
+            }
+            DateTime EndDate = DateTime.Now;
+            _logger.LogInformation($"connect to ftp 223, Список файлов создан в {EndDate}, время на создание списка {(EndDate - StartDate).TotalSeconds} секунд/ {(EndDate - StartDate).TotalMinutes} минут");
         }
 
         private void DownloadFtpFiles44(List<FileCash> fileCashes)
@@ -175,6 +262,52 @@ namespace DownLoaderZakupki.Core.Jobs
 
             DateTime EndDate = DateTime.Now;
             _logger.LogInformation($"Загружено {fileCashes.Count} архивов FZ44 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
+
+        }
+
+        private void DownloadFtpFiles223(List<FileCash> fileCashes)
+        {
+            DateTime StartDate = DateTime.Now;
+            _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ223 {StartDate}...");
+
+            var parallelOptions = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = _fzSettings223.Parallels,
+            };
+
+            Parallel.ForEach(fileCashes, parallelOptions, item =>
+            {
+                FtpClient client = new FtpClient(_commonSettings.FtpCredential.FZ223.Url)
+                {
+                    Credentials = new NetworkCredential(_commonSettings.FtpCredential.FZ223.Login, _commonSettings.FtpCredential.FZ223.Password),
+                    RetryAttempts = 5
+                };
+
+                try
+                {
+
+                    client.Connect();
+
+                    _logger.LogInformation($"Загрузка архива FZ223 {item.Full_path}...");
+                    client.DownloadFile(_fzSettings223.WorkPath + item.Full_path, item.Full_path);
+                    item.Modifid_date = DateTime.Now;
+                    item.Status = 2;
+                    UpdateCasheFiles(item);
+                }
+                catch (Exception ex)
+                {
+                    DeleteDBfile(item);
+                    _logger.LogError(ex, $"Ошибка скачивания архива FZ223 файл перемещён или недоступен: {item.Full_path}");
+                    _logger.LogError(ex, ex.Message);
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            });
+
+            DateTime EndDate = DateTime.Now;
+            _logger.LogInformation($"Загружено {fileCashes.Count} архивов FZ223 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
 
         }
 
