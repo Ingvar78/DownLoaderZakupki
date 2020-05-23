@@ -30,8 +30,13 @@ namespace DownLoaderZakupki
         {
             services.Configure<CommonSettings>(Configuration.GetSection("CommonSettings"));
             services.Configure<ConnectionDB>(Configuration.GetSection("ConnectionDB"));
+            
             services.Configure<FZSettings44>(Configuration.GetSection("FzSettings44"));
             services.Configure<FZSettings223>(Configuration.GetSection("FzSettings223"));
+
+            services.Configure<NsiSettings44>(Configuration.GetSection("NsiSettings44"));
+            services.Configure<NsiSettings223>(Configuration.GetSection("NsiSettings223"));
+
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
             services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
             services.AddLogging((conf) => conf.SetMinimumLevel(LogLevel.Trace));

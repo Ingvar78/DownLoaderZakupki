@@ -10,10 +10,15 @@ namespace DownLoaderZakupki.Data.Access
     public interface IGovDbContext : IDisposable
     {
         /// <summary>
+        /// Кэш файлов аукционы, протоколы
+        /// </summary>
+        DbSet<FileCashes> FileCashes { get; set; }
+
+        /// <summary>
         /// Кэш файлов справочников
         /// </summary>
-        DbSet<FileCash> FileCashes { get; set; }
-     
+        DbSet<NsiFileCashes> NsiFileCashes { get; set; }
+
         int SaveChanges();
     }
 }

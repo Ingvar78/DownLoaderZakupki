@@ -21,6 +21,8 @@ namespace DownLoaderZakupki
             IGovDbManager govDb,
             IOptions<FZSettings44> fzSettings44,
             IOptions<FZSettings223> fzSettings223,
+            IOptions<NsiSettings44> nsiSettings44,
+            IOptions<NsiSettings223> nsiSettings223,
             ILogger<JobsRegister> logger
             )
         {
@@ -34,10 +36,20 @@ namespace DownLoaderZakupki
                 Directory.CreateDirectory(fzSettings44.Value.WorkPath);
                 Directory.CreateDirectory(fzSettings223.Value.WorkPath);
             }
-
+            
+            //Загрузка архивов ФЗ 44 и 223 - данные аукционов, контрактов...справочников
             if (partUsed.UseUpload)
             {
-                Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value,govDb, logger))
+                //// данные аукционов, контрактов
+                //Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value,govDb, logger))
+                //    .NonReentrant()
+                //    .ToRunNow();
+
+                //Данные справочников
+                Schedule(() => new UploadNsiFilesJob(commonSettings.Value,
+                    nsiSettings44.Value,
+                    nsiSettings223.Value,
+                    govDb, logger))
                     .NonReentrant()
                     .ToRunNow();
             }

@@ -218,7 +218,7 @@ namespace DownLoaderZakupki.Core.Jobs
             _logger.LogInformation($"connect to ftp 223, Список файлов создан в {EndDate}, время на создание списка {(EndDate - StartDate).TotalSeconds} секунд/ {(EndDate - StartDate).TotalMinutes} минут");
         }
 
-        private void DownloadFtpFiles44(List<FileCash> fileCashes)
+        private void DownloadFtpFiles44(List<FileCashes> fileCashes)
         {
             DateTime StartDate = DateTime.Now;
             _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ44 {StartDate}...");
@@ -265,7 +265,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
         }
 
-        private void DownloadFtpFiles223(List<FileCash> fileCashes)
+        private void DownloadFtpFiles223(List<FileCashes> fileCashes)
         {
             DateTime StartDate = DateTime.Now;
             _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ223 {StartDate}...");
@@ -318,7 +318,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                 if (!GetDBfile(item.FullName))
                 {
-                    var filesave = new FileCash();
+                    var filesave = new FileCashes();
                     filesave.Date = item.Modified;
                     filesave.Size = item.Size;
                     filesave.Full_path = item.FullName;
@@ -335,7 +335,7 @@ namespace DownLoaderZakupki.Core.Jobs
         }
 
 
-        private void SavePath(FileCash item)
+        private void SavePath(FileCashes item)
         {
             try
             {
@@ -355,7 +355,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
         bool GetDBfile(string FullPath)
         {
-            FileCash find = null;
+            FileCashes find = null;
 
             using (var db = _govDb.GetContext())
             {
@@ -370,9 +370,9 @@ namespace DownLoaderZakupki.Core.Jobs
         }
 
 
-        List<FileCash> GetDBList(int lim, int status, int fz_type)
+        List<FileCashes> GetDBList(int lim, int status, int fz_type)
         {
-            List<FileCash> data = new List<FileCash>();
+            List<FileCashes> data = new List<FileCashes>();
 
             using (var db = _govDb.GetContext())
             {
@@ -387,7 +387,7 @@ namespace DownLoaderZakupki.Core.Jobs
         }
 
 
-        private void UpdateCasheFiles(FileCash fileCashes)
+        private void UpdateCasheFiles(FileCashes fileCashes)
         {
             using (var db = _govDb.GetContext())
             {
@@ -395,7 +395,7 @@ namespace DownLoaderZakupki.Core.Jobs
                 db.SaveChanges();
             }
         }
-        private void DeleteDBfile(FileCash fileCashes)
+        private void DeleteDBfile(FileCashes fileCashes)
         {
             using (var db = _govDb.GetContext())
             {
