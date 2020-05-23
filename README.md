@@ -38,6 +38,5 @@ dotnet DownLoaderZakupki.dll или запуск исполняемого фай
 2) dotnet ef database update -v
 
 ### Установка .Net Core на Linux 
-Установка .Net Core: 
-https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-ubuntu-1910
-https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-centos7
+- Ubuntu https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-ubuntu-1910
+- Centos 7 https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-centos7
