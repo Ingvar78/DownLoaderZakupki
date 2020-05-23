@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
@@ -42,12 +43,30 @@ namespace DownLoaderZakupki.Core.Jobs
         {
             try
             {
-                //ToDo
-                //1. Получить списко файлов               
-                GetNSIListFTP44();
-                GetNSIListFTP223();
-                //ToDo 
-                //2. Реализовать загрузку  данных справочников
+                Parallel.Invoke(
+                    () => { GetNSIListFTP44(); },
+                    () => { DownloadFtpFiles44(GetDBList(1000, 1, 44)); },                    
+                    () => { GetNSIListFTP223(); },
+                    () => { DownloadFtpFiles223(GetDBList(1000, 1, 223)); }
+                    );
+
+                var cnt44 = GetDBList(1000, 1, 44).Count;
+                var cnt223 = GetDBList(1000, 1, 223).Count;
+
+                //Грузить пока не устанет
+                while (cnt44 > 0 || cnt223 > 0)
+                {
+                    //2. Загрузка справочников 
+                    //44ФЗ/223ФЗ
+                    Parallel.Invoke(
+                        () => { DownloadFtpFiles44(GetDBList(1000, 1, 44)); },
+                        () => { DownloadFtpFiles223(GetDBList(1000, 1, 223)); }
+                        );
+
+                    cnt44 = GetDBList(1000, 1, 44).Count;
+                    cnt223 = GetDBList(1000, 1, 223).Count;
+                }
+
 
             }
             catch (Exception ex)
@@ -234,6 +253,134 @@ namespace DownLoaderZakupki.Core.Jobs
             }
 
 
+        }
+
+        List<NsiFileCashes> GetDBList(int lim, int status, int fz_type)
+        {
+            List<NsiFileCashes> data = new List<NsiFileCashes>();
+
+            using (var db = _govDb.GetContext())
+            {
+                data = db.NsiFileCashes
+                    .AsNoTracking()
+                    .Where(x => x.Status == status && x.Fz_type == fz_type)
+                    .OrderByDescending(x => x.Date)
+                    .Take(lim)
+                    .ToList();
+            }
+            return data;
+        }
+
+
+        private void DownloadFtpFiles44(List<NsiFileCashes> fileCashes)
+        {
+            DateTime StartDate = DateTime.Now;
+            _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов NSI FZ44 {StartDate}...");
+
+            var parallelOptions = new ParallelOptions()
+            {
+                //MaxDegreeOfParallelism = 1,
+                MaxDegreeOfParallelism = _nsiSettings44.Parallels,
+            };
+
+            Parallel.ForEach(fileCashes, parallelOptions, item =>
+            {
+                FtpClient client = new FtpClient(_commonSettings.FtpCredential.FZ44.Url)
+                {
+                    Credentials = new NetworkCredential(_commonSettings.FtpCredential.FZ44.Login, _commonSettings.FtpCredential.FZ44.Password),
+                    RetryAttempts = 5
+                };
+
+                try
+                {
+
+                    client.Connect();
+
+                    _logger.LogInformation($"Загрузка архива NSI FZ44 {item.Full_path}...");
+                    client.DownloadFile(_nsiSettings44.WorkPath + item.Full_path, item.Full_path);
+                    item.Modifid_date = DateTime.Now;
+                    item.Status = 2;
+                    UpdateCasheFiles(item);
+                }
+                catch (Exception ex)
+                {
+                    //Удаляем т.к. файл мог быть перемещён в рамках WorkFlow закупок, при следующей попытке файл станет в очередь. 
+                    DeleteDBfile(item);
+                    _logger.LogError(ex, $"Ошибка скачивания архива NSI FZ44 файл перемещён или недоступен: {item.Full_path}");
+                    _logger.LogError(ex, ex.Message);
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            });
+
+            DateTime EndDate = DateTime.Now;
+            _logger.LogInformation($"Загружено {fileCashes.Count} архивов NSI FZ44 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
+        }
+
+        private void DownloadFtpFiles223(List<NsiFileCashes> fileCashes)
+        {
+            DateTime StartDate = DateTime.Now;
+            _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ223 {StartDate}...");
+
+            var parallelOptions = new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = _nsiSettings223.Parallels,
+            };
+
+            Parallel.ForEach(fileCashes, parallelOptions, item =>
+            {
+                FtpClient client = new FtpClient(_commonSettings.FtpCredential.FZ223.Url)
+                {
+                    Credentials = new NetworkCredential(_commonSettings.FtpCredential.FZ223.Login, _commonSettings.FtpCredential.FZ223.Password),
+                    RetryAttempts = 5
+                };
+
+                try
+                {
+
+                    client.Connect();
+
+                    _logger.LogInformation($"Загрузка архива NSI FZ223 {item.Full_path}...");
+                    client.DownloadFile(_nsiSettings223.WorkPath + item.Full_path, item.Full_path);
+                    item.Modifid_date = DateTime.Now;
+                    item.Status = 2;
+                    UpdateCasheFiles(item);
+                }
+                catch (Exception ex)
+                {
+                    //Удаляем т.к. файл мог быть перемещён в рамках WorkFlow закупок, при следующей попытке файл станет в очередь. 
+                    DeleteDBfile(item);
+                    _logger.LogError(ex, $"Ошибка скачивания архива NSI FZ223 файл перемещён или недоступен: {item.Full_path}");
+                    _logger.LogError(ex, ex.Message);
+                }
+                finally
+                {
+                    client.Disconnect();
+                }
+            });
+
+            DateTime EndDate = DateTime.Now;
+            _logger.LogInformation($"Загружено {fileCashes.Count} архивов FZ223 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
+
+        }
+        private void UpdateCasheFiles(NsiFileCashes fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.NsiFileCashes.Update(fileCashes);
+                db.SaveChanges();
+            }
+        }
+
+        private void DeleteDBfile(NsiFileCashes fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.NsiFileCashes.Remove(fileCashes);
+                db.SaveChanges();
+            }
         }
     }
 }

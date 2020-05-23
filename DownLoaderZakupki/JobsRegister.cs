@@ -43,7 +43,8 @@ namespace DownLoaderZakupki
                 // данные аукционов, контрактов
                 Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value, govDb, logger))
                     .NonReentrant()
-                    .ToRunNow();
+                    .ToRunNow()
+                    .AndEvery(4).Hours();
 
                 //Данные справочников
                 Schedule(() => new UploadNsiFilesJob(commonSettings.Value,
@@ -51,7 +52,8 @@ namespace DownLoaderZakupki
                     nsiSettings223.Value,
                     govDb, logger))
                     .NonReentrant()
-                    .ToRunNow();
+                    .ToRunNow()
+                    .AndEvery(24).Hours();
             }
 
             _logger.LogInformation("End Init Job");

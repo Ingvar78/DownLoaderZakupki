@@ -47,7 +47,7 @@ namespace DownLoaderZakupki.Core.Jobs
             DownloadFtpFiles44(GetDBList(1000, 1, 44));
 
             Parallel.Invoke(
-                                    
+                
                 // 1. получение списка файлов + сохранение списка для последующей загрузки
                 () => { GetListFTP44(); },
                 //2. загрузка 1000 файлов через получение списка файлов.
