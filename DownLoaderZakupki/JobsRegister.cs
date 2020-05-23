@@ -40,10 +40,10 @@ namespace DownLoaderZakupki
             //Загрузка архивов ФЗ 44 и 223 - данные аукционов, контрактов...справочников
             if (partUsed.UseUpload)
             {
-                //// данные аукционов, контрактов
-                //Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value,govDb, logger))
-                //    .NonReentrant()
-                //    .ToRunNow();
+                // данные аукционов, контрактов
+                Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value, govDb, logger))
+                    .NonReentrant()
+                    .ToRunNow();
 
                 //Данные справочников
                 Schedule(() => new UploadNsiFilesJob(commonSettings.Value,
