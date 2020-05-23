@@ -6,3 +6,4 @@ appsettings.development.json
 /DownLoaderZakupki/appsettings.Development.json
 **/bin
 **/obj
+*.sql
