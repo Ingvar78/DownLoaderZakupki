@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DownLoaderZakupki.Models.Enum;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -31,7 +32,7 @@ namespace DownLoaderZakupki.Data.DB
         [Column(TypeName = "bigint")]
         public long Size { get; set; }
         public int Status { get; set; }
-        public int Fz_type { get; set; }
+        public FLType Fz_type { get; set; }
         public DateTime Modifid_date { get; set; }
     }
 
@@ -60,7 +61,7 @@ namespace DownLoaderZakupki.Data.DB
         [Column(TypeName = "bigint")]
         public long Size { get; set; }
         public int Status { get; set; }
-        public int Fz_type { get; set; }
+        public FLType Fz_type { get; set; }
         public DateTime Modifid_date { get; set; }
     }
 }

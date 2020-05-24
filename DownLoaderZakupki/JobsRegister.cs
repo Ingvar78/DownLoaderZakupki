@@ -56,6 +56,15 @@ namespace DownLoaderZakupki
                     .AndEvery(24).Hours();
             }
 
+            if (partUsed.UseNsiSettings44)
+            {
+                Schedule(() => new ParseNsi44FilesJob(commonSettings.Value,
+                        nsiSettings44.Value,
+                        govDb, logger))
+                        .NonReentrant()
+                        .ToRunNow();
+            }
+
             _logger.LogInformation("End Init Job");
         }
 
