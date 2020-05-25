@@ -24,7 +24,7 @@ dotnet publish .\DownLoaderZakupki.sln -c release -o publish -r linux-x64
 Для запуска приложения на Linux: 
 1) chmod +x DownLoaderZakupki
 2) отредактировать appsettings.json и указать правильно секции: "BasePath" and "WorkPath" и подключение к серверу Postgres
-2.1) Пример конфигурации для Linux: appsettings.linux.json
+- Пример конфигурации для Linux: appsettings.linux.json
 
 Для запуска приложения на Windows: 
 1) отредактировать appsettings.json и указать правильно секции: "BasePath" and "WorkPath" и подключение к серверу Postgres
