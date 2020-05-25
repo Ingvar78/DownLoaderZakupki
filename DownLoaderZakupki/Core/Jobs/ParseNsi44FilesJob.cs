@@ -50,23 +50,23 @@ namespace DownLoaderZakupki.Core.Jobs
                     {
                         case "nsiAbandonedReason":
                             {
-                                var tt = GetDBList(100, 2, FLType.Fl44, basepath, dir);
+                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 ParsensiAbandonedReason(tt);
                             }
                             break;
                         case "nsiOrganization":
                             {
-                                var tt = GetDBList(100, 2, FLType.Fl44, basepath, dir);
+                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
                             }
                             break;
                         case "nsiPlacingWay":
                             {
-                                var tt = GetDBList(100, 2, FLType.Fl44, basepath, dir);
+                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
                             }
                             break;
                         case "nsiETP":
                             {
-                                var tt = GetDBList(100, 2, FLType.Fl44, basepath, dir);
+                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
                             }
                             break;
 
@@ -83,7 +83,7 @@ namespace DownLoaderZakupki.Core.Jobs
         }
 
 
-        List<NsiFileCashes> GetDBList(int lim, int status, FLType fz_type, string basepath, string dirtype)
+        List<NsiFileCashes> GetDBList(int lim, Status status, FLType fz_type, string basepath, string dirtype)
         {
             List<NsiFileCashes> data = new List<NsiFileCashes>();
 

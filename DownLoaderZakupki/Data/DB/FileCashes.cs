@@ -31,7 +31,7 @@ namespace DownLoaderZakupki.Data.DB
 
         [Column(TypeName = "bigint")]
         public long Size { get; set; }
-        public int Status { get; set; }
+        public Status Status { get; set; }
         public FLType Fz_type { get; set; }
         public DateTime Modifid_date { get; set; }
     }
@@ -60,7 +60,7 @@ namespace DownLoaderZakupki.Data.DB
 
         [Column(TypeName = "bigint")]
         public long Size { get; set; }
-        public int Status { get; set; }
+        public Status Status { get; set; }
         public FLType Fz_type { get; set; }
         public DateTime Modifid_date { get; set; }
     }

@@ -19,6 +19,10 @@ namespace DownLoaderZakupki.Data.Access
         /// </summary>
         DbSet<NsiFileCashes> NsiFileCashes { get; set; }
 
+        /// <summary>
+        /// Справочник оснований признания процедуры несостоявшейся
+        /// </summary>
+        DbSet<NsiAbandonedReason> NsiAReasons { get; set; }
         int SaveChanges();
     }
 }

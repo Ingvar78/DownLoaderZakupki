@@ -46,13 +46,13 @@ namespace DownLoaderZakupki.Core.Jobs
             {
                 Parallel.Invoke(
                     () => { GetNSIListFTP44(); },
-                    () => { DownloadFtpFiles44(GetDBList(1000, 1, FLType.Fl44)); },                    
+                    () => { DownloadFtpFiles44(GetDBList(1000, Status.Exist, FLType.Fl44)); },                    
                     () => { GetNSIListFTP223(); },
-                    () => { DownloadFtpFiles223(GetDBList(1000, 1, FLType.Fl223)); }
+                    () => { DownloadFtpFiles223(GetDBList(1000, Status.Exist, FLType.Fl223)); }
                     );
 
-                var cnt44 = GetDBList(1000, 1, FLType.Fl44).Count;
-                var cnt223 = GetDBList(1000, 1, FLType.Fl223).Count;
+                var cnt44 = GetDBList(1000, Status.Exist, FLType.Fl44).Count;
+                var cnt223 = GetDBList(1000, Status.Exist, FLType.Fl223).Count;
 
                 //Грузить пока не устанет
                 while (cnt44 > 0 || cnt223 > 0)
@@ -60,12 +60,12 @@ namespace DownLoaderZakupki.Core.Jobs
                     //2. Загрузка справочников 
                     //44ФЗ/223ФЗ
                     Parallel.Invoke(
-                        () => { DownloadFtpFiles44(GetDBList(1000, 1, FLType.Fl44)); },
-                        () => { DownloadFtpFiles223(GetDBList(1000, 1, FLType.Fl223)); }
+                        () => { DownloadFtpFiles44(GetDBList(1000, Status.Exist, FLType.Fl44)); },
+                        () => { DownloadFtpFiles223(GetDBList(1000, Status.Exist, FLType.Fl223)); }
                         );
 
-                    cnt44 = GetDBList(1000, 1, FLType.Fl44).Count;
-                    cnt223 = GetDBList(1000, 1, FLType.Fl223).Count;
+                    cnt44 = GetDBList(1000, Status.Exist, FLType.Fl44).Count;
+                    cnt223 = GetDBList(1000, Status.Exist, FLType.Fl223).Count;
                 }
 
 
@@ -111,7 +111,7 @@ namespace DownLoaderZakupki.Core.Jobs
                         //4. Выдать топ 100 загруженных zip но не обработанных файлов.
                         //5. Обработанные архивы фтопку. 
                         //ToDo Save ListFTP
-                        SaveFTPPath(ftpList, DirsDoc, basedir44, 1, FLType.Fl44);
+                        SaveFTPPath(ftpList, DirsDoc, basedir44, Status.Exist, FLType.Fl44);
                         //DownloadFTPRegion(GetDBList(100, 1, 44));
                         _logger.LogInformation($"Создан список файлов справочников для загрузки: {basedir44} { DirsDoc} 44ФЗ");
                         client.Disconnect();
@@ -162,7 +162,7 @@ namespace DownLoaderZakupki.Core.Jobs
                         var fileList = client.GetListing(ftpPath, FtpListOption.Recursive);
                         var ftpList = fileList.Where(item => item.Size > _nsiSettings223.EmptyZipSize && item.Type == FtpFileSystemObjectType.File && item.Modified > ModDate).ToList();
                         //ToDo Save ListFTP
-                        SaveFTPPath(ftpList, DirsDoc, basedir223, 1, FLType.Fl223);
+                        SaveFTPPath(ftpList, DirsDoc, basedir223, Status.Exist, FLType.Fl223);
                         _logger.LogInformation($"Создан список файлов справочников NSI для загрузки: {basedir223} /{DirsDoc} 223ФЗ");
                         client.Disconnect();
                     }
@@ -183,7 +183,7 @@ namespace DownLoaderZakupki.Core.Jobs
                     var fileList = client.GetListing(ftpPath, FtpListOption.Recursive);
                     var ftpList = fileList.Where(item => item.Size > _nsiSettings223.EmptyZipSize && item.Type == FtpFileSystemObjectType.File && item.Modified > ModDate).ToList();
                     //ToDo Save ListFTP
-                    SaveFTPPath(ftpList, "nsiVSRZ_CSV", basedir223, 1, FLType.Fl223);
+                    SaveFTPPath(ftpList, "nsiVSRZ_CSV", basedir223, Status.Exist, FLType.Fl223);
                     _logger.LogInformation($"Создан список файлов справочников площадок для загрузки: {basedir223} / nsiVSRZ_CSV 223ФЗ");
                     client.Disconnect();
                 }
@@ -200,7 +200,7 @@ namespace DownLoaderZakupki.Core.Jobs
             DateTime EndDate = DateTime.Now;
             _logger.LogInformation($"connect to ftp 223, Список файлов создан в {EndDate}, время на создание списка {(EndDate - StartDate).TotalSeconds} секунд/ {(EndDate - StartDate).TotalMinutes} минут");
         }
-        private void SaveFTPPath(List<FtpListItem> ListFile, string ftpDir, string baseDir, int status, FLType fz)
+        private void SaveFTPPath(List<FtpListItem> ListFile, string ftpDir, string baseDir, Status status, FLType fz)
         {
             foreach (FtpListItem item in ListFile)
             {
@@ -256,7 +256,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
         }
 
-        List<NsiFileCashes> GetDBList(int lim, int status, FLType fz_type)
+        List<NsiFileCashes> GetDBList(int lim, Status status, FLType fz_type)
         {
             List<NsiFileCashes> data = new List<NsiFileCashes>();
 
@@ -300,7 +300,7 @@ namespace DownLoaderZakupki.Core.Jobs
                     _logger.LogInformation($"Загрузка архива NSI FZ44 {item.Full_path}...");
                     client.DownloadFile(_nsiSettings44.WorkPath + item.Full_path, item.Full_path);
                     item.Modifid_date = DateTime.Now;
-                    item.Status = 2;
+                    item.Status = Status.Uploaded;
                     UpdateCasheFiles(item);
                 }
                 catch (Exception ex)
@@ -346,7 +346,7 @@ namespace DownLoaderZakupki.Core.Jobs
                     _logger.LogInformation($"Загрузка архива NSI FZ223 {item.Full_path}...");
                     client.DownloadFile(_nsiSettings223.WorkPath + item.Full_path, item.Full_path);
                     item.Modifid_date = DateTime.Now;
-                    item.Status = 2;
+                    item.Status = Status.Uploaded;
                     UpdateCasheFiles(item);
                 }
                 catch (Exception ex)

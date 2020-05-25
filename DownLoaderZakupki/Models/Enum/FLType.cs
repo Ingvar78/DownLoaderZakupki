@@ -31,5 +31,25 @@ namespace DownLoaderZakupki.Models.Enum
         [Description("94-ФЗ")]
         Fl94 = 94
     }
+
+    public enum Status
+    { 
+        /// <summary>
+        /// Файл в очереди на загрузку
+        /// </summary>
+        Exist = 1,
+        /// <summary>
+        /// Файл загружен
+        /// </summary>
+        Uploaded = 2,
+        /// <summary>
+        /// Файл обработан
+        /// </summary>
+        Processed = 3,
+        /// <summary>
+        /// Файл обработан и удалён
+        /// </summary>
+        Вeleted =4
+    }
 }
 
