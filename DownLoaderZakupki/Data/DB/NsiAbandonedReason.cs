@@ -19,8 +19,10 @@ namespace DownLoaderZakupki.Data.DB
         [Column(TypeName = "varchar(3000)")]
         public string name { get; set; }
 
+        [Column(TypeName = "varchar(350)")]
         public string objectName { get; set; }
 
+        [Column(TypeName = "varchar(4)")]
         public string type { get; set; }
 
         /// <summary>
