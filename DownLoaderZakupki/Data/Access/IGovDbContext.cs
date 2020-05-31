@@ -23,6 +23,11 @@ namespace DownLoaderZakupki.Data.Access
         /// Справочник оснований признания процедуры несостоявшейся
         /// </summary>
         DbSet<NsiAbandonedReason> NsiAReasons { get; set; }
+
+        /// <summary>
+        /// Справочник: Электронные площадки
+        /// </summary>
+        DbSet<NsiEtps> NsiEtps { get; set; }
         int SaveChanges();
     }
 }

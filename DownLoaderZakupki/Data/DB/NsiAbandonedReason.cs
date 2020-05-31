@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 
 namespace DownLoaderZakupki.Data.DB
 {
+    /// <summary>
+    ///  Справочник оснований признания процедуры несостоявшейся
+    /// </summary>
     public class NsiAbandonedReason
     {
         [Key]
         public int Id { get; set; }
-
         
         [Column(TypeName = "bigint")]
         public double OosId { get; set; }

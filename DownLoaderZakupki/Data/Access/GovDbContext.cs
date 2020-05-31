@@ -41,6 +41,7 @@ namespace DownLoaderZakupki.Data.Access
         public DbSet<FileCashes> FileCashes { get; set; }
         public DbSet<NsiFileCashes> NsiFileCashes { get; set; }
         public DbSet<NsiAbandonedReason> NsiAReasons { get; set; }
+        public DbSet<NsiEtps> NsiEtps { get; set; }
 
         int IGovDbContext.SaveChanges()
         {

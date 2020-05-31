@@ -41,33 +41,33 @@ namespace DownLoaderZakupki.Core.Jobs
         {
             try
             {
-                var tx = (double.MaxValue).ToString();
-
                 var basepath = _nsiSettings44.BaseDir;
                 var dirlist = _nsiSettings44.DocDirList;
                 foreach (var dir in dirlist)
                 {
                     switch (dir)
                     {
-                        case "nsiAbandonedReason":
-                            { 
-                                ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
-                            }
-                            break;
+                        //case "nsiAbandonedReason":
+                        //    { 
+                        //        ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                        //    }
+                        //    break;
                         //ToDo
-                        case "nsiOrganization":
-                            {
-                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                            }
-                            break;
-                        case "nsiPlacingWay":
-                            {
-                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                            }
-                            break;
+                        //case "nsiOrganization":
+                        //    {
+                        //        var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                        //    }
+                        //    break;
+                        //ToDo
+                        //case "nsiPlacingWay":
+                        //    {
+                        //        var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                        //    }
+                        //    break;
                         case "nsiETP":
                             {
                                 var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                ParsensiETP(tt);
                             }
                             break;
 
@@ -166,8 +166,6 @@ namespace DownLoaderZakupki.Core.Jobs
             {
                 foreach (var ar in nsiAbandonedReason)
                 {
-                    var tt = JsonConvert.SerializeObject(ar.docType);
-                    var dd = JsonConvert.SerializeObject(ar.placingWay);
 
                     NsiAbandonedReason NsiAReason = new NsiAbandonedReason()
                     {
@@ -186,20 +184,20 @@ namespace DownLoaderZakupki.Core.Jobs
                         var find = db.NsiAReasons.Where(x => x.Code == NsiAReason.Code 
                         && x.OosId==ar.id
                         && x.Fz_type == FLType.Fl44).FirstOrDefault();
-                    if (find == null)
-                    {
-                        db.NsiAReasons.Add(NsiAReason);
-                        db.SaveChanges();
-                    }
-                    else
-                    {
+                        if (find == null)
+                        {
+                            db.NsiAReasons.Add(NsiAReason);
+                            db.SaveChanges();
+                        }
+                        else
+                        {
                             //find.objectName = NsiAReason.objectName;
                             find.Actual= NsiAReason.Actual;
                             //find.docType= NsiAReason.docType;
                             //find.objectName = NsiAReason.objectName;
                             db.NsiAReasons.Update(find);
                             db.SaveChanges();
-                    }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -211,6 +209,108 @@ namespace DownLoaderZakupki.Core.Jobs
              
             }
             
+        }
+
+
+        void ParsensiETP(List<NsiFileCashes> nsiFileCashes)
+        {
+            foreach (var nsiFile in nsiFileCashes)
+            {
+                string zipPath = (_nsiSettings44.WorkPath + nsiFile.Full_path);
+                string extractPath = (_nsiSettings44.WorkPath + "/extract" + nsiFile.Full_path);
+
+                if (Directory.Exists(extractPath))
+                {
+                    Directory.Delete(extractPath, true);
+                }
+                //и создаём её заново
+                Directory.CreateDirectory(extractPath);
+
+                if (File.Exists(zipPath))
+                {
+                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                            {
+                                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                                string xml_f_name = entry.FullName;
+                                string xmlin = (extractPath + "/" + entry.FullName);
+                                _logger.LogInformation("xmlin parse: " + xmlin);
+
+                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                {
+                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
+
+                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                    export exportd = xmlser.Deserialize(reader) as export;
+
+                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+
+
+                                    try
+                                    {
+                                        exportNsiETPs NsiETPs = exportd.Items[0] as exportNsiETPs;
+                                        SaveNsiETP(NsiETPs.nsiETP);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, ex.Message);
+                                    }
+
+                                }
+
+                            }
+                        }
+                }
+            }
+        }
+
+
+        void SaveNsiETP(zfcs_nsiETPType[] nsiETPs)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                foreach (var nsiETp in nsiETPs)
+                {
+                    NsiEtps etp = new NsiEtps()
+                    {
+                        Code = nsiETp.code,
+                        Name = nsiETp.name,
+                        Actual = nsiETp.actual,
+                        Address = nsiETp.address,
+                        Description = nsiETp.description,
+                        Email = nsiETp.email,
+                        FullName = nsiETp.fullName,
+                        INN = nsiETp.INN,
+                        KPP = nsiETp.KPP,
+                        Phone = nsiETp.phone
+                    };
+                    try
+                    {
+                        var find = db.NsiEtps.Where (x=>x.Code==etp.Code).FirstOrDefault();
+
+                        if (find == default)
+                        {
+                            db.NsiEtps.Add(etp);
+                            db.SaveChanges();
+                        }
+                        else
+                        {
+                            find.Actual = etp.Actual;
+                            db.NsiEtps.Update(etp);
+                            db.SaveChanges();
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+
+
+                }
+            }
         }
     }
 }
