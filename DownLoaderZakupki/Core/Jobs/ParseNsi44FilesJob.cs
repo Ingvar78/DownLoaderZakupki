@@ -6,6 +6,7 @@ using DownLoaderZakupki.Models.Ext.Fz44;
 using FluentScheduler;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -40,7 +41,7 @@ namespace DownLoaderZakupki.Core.Jobs
         {
             try
             {
-                //ToDo
+                var tx = (double.MaxValue).ToString();
 
                 var basepath = _nsiSettings44.BaseDir;
                 var dirlist = _nsiSettings44.DocDirList;
@@ -49,11 +50,11 @@ namespace DownLoaderZakupki.Core.Jobs
                     switch (dir)
                     {
                         case "nsiAbandonedReason":
-                            {
-                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                ParsensiAbandonedReason(tt);
+                            { 
+                                ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
+                        //ToDo
                         case "nsiOrganization":
                             {
                                 var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
@@ -142,6 +143,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                     {
                                         exportNsiAbandonedReasonList exportNsiAbandoned = exportd.Items[0] as exportNsiAbandonedReasonList;
                                         //SaveAbandonedReasons(exportNsiAbandonedReasonList);
+                                        SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
                                     }
                                     catch (Exception ex)
                                     {
@@ -156,5 +158,59 @@ namespace DownLoaderZakupki.Core.Jobs
             }
         }
 
+
+        void SaveAbandonedReason(zfcs_nsiAbandonedReasonType[] nsiAbandonedReason)
+        {
+
+            using (var db = _govDb.GetContext())
+            {
+                foreach (var ar in nsiAbandonedReason)
+                {
+                    var tt = JsonConvert.SerializeObject(ar.docType);
+                    var dd = JsonConvert.SerializeObject(ar.placingWay);
+
+                    NsiAbandonedReason NsiAReason = new NsiAbandonedReason()
+                    {
+                        Code = ar.code,
+                        Name = ar.name,
+                        docType = JsonConvert.SerializeObject( ar.docType),
+                        objectName = ar.objectName,
+                        PlacingWay = JsonConvert.SerializeObject(ar.placingWay),
+                        Type = ar.type.ToString(),
+                        Fz_type=FLType.Fl44,
+                        Actual = ar.actual,
+                        OosId = ar.id
+                    };
+                    try {
+
+                        var find = db.NsiAReasons.Where(x => x.Code == NsiAReason.Code 
+                        && x.OosId==ar.id
+                        && x.Fz_type == FLType.Fl44).FirstOrDefault();
+                    if (find == null)
+                    {
+                        db.NsiAReasons.Add(NsiAReason);
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                            //find.objectName = NsiAReason.objectName;
+                            find.Actual= NsiAReason.Actual;
+                            //find.docType= NsiAReason.docType;
+                            //find.objectName = NsiAReason.objectName;
+                            db.NsiAReasons.Update(find);
+                            db.SaveChanges();
+                    }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+
+                }
+
+             
+            }
+            
+        }
     }
 }

@@ -13,45 +13,36 @@ namespace DownLoaderZakupki.Data.DB
         [Key]
         public int Id { get; set; }
 
+        
+        [Column(TypeName = "bigint")]
+        public double OosId { get; set; }
+
         [Column(TypeName = "varchar(20)")]
-        public string code { get; set; }
+        public string Code { get; set; }
 
         [Column(TypeName = "varchar(3000)")]
-        public string name { get; set; }
+        public string Name { get; set; }
 
         [Column(TypeName = "varchar(350)")]
         public string objectName { get; set; }
 
         [Column(TypeName = "varchar(4)")]
-        public string type { get; set; }
+        public string Type { get; set; }
 
         /// <summary>
         /// Храним в формате 
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public docType docType { get; set; }
+        public string docType { get; set; }
 
         /// <summary>
         /// Храним в формате 
         /// </summary>
         [Column(TypeName = "jsonb")]
-        public placingWayType placingWay { get; set; }
+        public string PlacingWay { get; set; }
 
-        public bool actual { get; set; }
+        public bool Actual { get; set; }
 
-        public FLType fz_type { get; set; }
-    }
-
-    public class placingWayType
-    {
-        public string code { get; set; }
-
-        public string name { get; set; }
-    }
-
-    public class docType
-    {
-        public string code { get; set; }
-        public string name { get; set; }
+        public FLType Fz_type { get; set; }
     }
 }
