@@ -59,17 +59,18 @@ namespace DownLoaderZakupki.Core.Jobs
                         //    }
                         //    break;
                         //ToDo
-                        //case "nsiPlacingWay":
-                        //    {
-                        //        var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                        //    }
-                        //    break;
-                        case "nsiETP":
+                        case "nsiPlacingWay":
                             {
                                 var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                ParsensiETP(tt);
+                                ParsensiPlacingWay(tt);
                             }
                             break;
+
+                        //case "nsiETP":
+                        //    {
+                        //        ParsensiETP(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                        //    }
+                        //    break;
 
                         default: break;
                     }
@@ -135,14 +136,10 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                     XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                     export exportd = xmlser.Deserialize(reader) as export;
-
                                     Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                    //exportNsiPlacingWayList
-
                                     try
                                     {
                                         exportNsiAbandonedReasonList exportNsiAbandoned = exportd.Items[0] as exportNsiAbandonedReasonList;
-                                        //SaveAbandonedReasons(exportNsiAbandonedReasonList);
                                         SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
                                     }
                                     catch (Exception ex)
@@ -308,6 +305,126 @@ namespace DownLoaderZakupki.Core.Jobs
                         _logger.LogError(ex, ex.Message);
                     }
 
+
+                }
+            }
+        }
+
+        void ParsensiPlacingWay(List<NsiFileCashes> nsiFileCashes)
+        {
+            foreach (var nsiFile in nsiFileCashes)
+            {
+                string zipPath = (_nsiSettings44.WorkPath + nsiFile.Full_path);
+                string extractPath = (_nsiSettings44.WorkPath + "/extract" + nsiFile.Full_path);
+
+                if (Directory.Exists(extractPath))
+                {
+                    Directory.Delete(extractPath, true);
+                }
+                //и создаём её заново
+                Directory.CreateDirectory(extractPath);
+
+                if (File.Exists(zipPath))
+                {
+                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                            {
+                                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                                string xml_f_name = entry.FullName;
+                                string xmlin = (extractPath + "/" + entry.FullName);
+                                _logger.LogInformation("xmlin parse: " + xmlin);
+
+                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                {
+                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
+
+                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                    export exportd = xmlser.Deserialize(reader) as export;
+                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                    //nsiPlacingWayList
+                                    try
+                                    {
+                                        exportNsiPlacingWayList NsiPlacingWayList = exportd.Items[0] as exportNsiPlacingWayList;
+                                        SavePlacingWay(NsiPlacingWayList.nsiPlacingWay);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, ex.Message);
+                                    }
+
+                                }
+
+                            }
+                        }
+                }
+            }
+        }
+
+
+        void SavePlacingWay(zfcs_nsiPlacingWayType[] PlacingWays)
+        {
+
+            using (var db = _govDb.GetContext())
+            {
+
+                foreach (var pw in PlacingWays)
+                {
+                    NsiPlacingWays placingWay = new NsiPlacingWays()
+                    {
+                        Code = pw.code,
+                        Actual = pw.actual,
+                        Fz_type = FLType.Fl44,
+                        IsExclude = pw.isExclude,
+                        IsProcedure = pw.isProcedure,
+                        Name = pw.name,
+                        PlacingWayData = JsonConvert.SerializeObject(pw),
+                        PlacingWayId = pw.placingWayId,
+                        Type = pw.type
+                    };
+
+                    switch (pw.subsystemType)
+                    {
+
+                        case zfcs_placingWayTypeEnum.FZ44:
+                            placingWay.SSType = 44;
+                            break;
+                        case zfcs_placingWayTypeEnum.FZ94:
+                            placingWay.SSType = 94;
+                            break;
+                        case zfcs_placingWayTypeEnum.PP615:
+                            placingWay.SSType = 615;
+                            break;
+                        default:
+                            placingWay.SSType = 0;
+                            break;
+                    }
+
+                    placingWay.IsClosing = false;
+                    if (pw.name.ToLower().Contains("закрыт"))
+                    {
+                        placingWay.IsClosing = true;
+                    }
+
+
+                    if (!pw.actual)
+                    {
+                        placingWay.IsClosing = true;
+                    }
+                    var find = db.NsiPlacingWays.Where(x => x.PlacingWayId == placingWay.PlacingWayId && x.Fz_type == placingWay.Fz_type).SingleOrDefault();
+
+                    if (find == null)
+                    {
+                        db.NsiPlacingWays.Add(placingWay);
+                        db.SaveChanges();
+                    }
+                    else
+                    {
+                        find.IsClosing = placingWay.IsClosing;
+                        db.NsiPlacingWays.Update(find);
+                        db.SaveChanges();
+                    }
 
                 }
             }

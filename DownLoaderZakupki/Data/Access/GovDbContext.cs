@@ -43,6 +43,8 @@ namespace DownLoaderZakupki.Data.Access
         public DbSet<NsiAbandonedReason> NsiAReasons { get; set; }
         public DbSet<NsiEtps> NsiEtps { get; set; }
 
+        public DbSet<NsiPlacingWays> NsiPlacingWays { get; set; }
+
         int IGovDbContext.SaveChanges()
         {
             return this.SaveChangesInternal();

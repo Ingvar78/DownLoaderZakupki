@@ -28,6 +28,11 @@ namespace DownLoaderZakupki.Data.Access
         /// Справочник: Электронные площадки
         /// </summary>
         DbSet<NsiEtps> NsiEtps { get; set; }
+
+        /// <summary>
+        /// Справочник: Способы размещения заказов
+        /// </summary>
+        DbSet<NsiPlacingWays> NsiPlacingWays { get; set; }
         int SaveChanges();
     }
 }
