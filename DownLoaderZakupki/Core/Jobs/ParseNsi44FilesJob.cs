@@ -47,30 +47,28 @@ namespace DownLoaderZakupki.Core.Jobs
                 {
                     switch (dir)
                     {
-                        //case "nsiAbandonedReason":
-                        //    { 
-                        //        ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
-                        //    }
-                        //    break;
-                        //ToDo
-                        //case "nsiOrganization":
-                        //    {
-                        //        var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                        //    }
-                        //    break;
-                        //ToDo
+                        case "nsiAbandonedReason":
+                            {
+                                ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                            }
+                            break;
+                        case "nsiOrganization":
+                            {
+                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                ParseNsiOrganization(tt);
+                            }
+                            break;
                         case "nsiPlacingWay":
                             {
                                 var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 ParsensiPlacingWay(tt);
                             }
                             break;
-
-                        //case "nsiETP":
-                        //    {
-                        //        ParsensiETP(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
-                        //    }
-                        //    break;
+                        case "nsiETP":
+                            {
+                                ParsensiETP(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                            }
+                            break;
 
                         default: break;
                     }
@@ -97,7 +95,8 @@ namespace DownLoaderZakupki.Core.Jobs
                     && x.Fz_type == fz_type
                     && x.BaseDir == basepath
                     && x.Dirtype == dirtype)
-                    .OrderByDescending(x => x.Date)
+                    .OrderBy(x => x.Date)
+                    //.OrderByDescending(x => x.Date)
                     .Take(lim)
                     .ToList();
             }
@@ -136,11 +135,15 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                     XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                     export exportd = xmlser.Deserialize(reader) as export;
-                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
                                     try
                                     {
                                         exportNsiAbandonedReasonList exportNsiAbandoned = exportd.Items[0] as exportNsiAbandonedReasonList;
                                         SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
+
+                                        nsiFile.Status = Status.Processed;
+                                        UpdateCasheFiles(nsiFile);
+
                                     }
                                     catch (Exception ex)
                                     {
@@ -152,6 +155,8 @@ namespace DownLoaderZakupki.Core.Jobs
                             }
                         }
                 }
+
+                Directory.Delete(extractPath, true);
             }
         }
 
@@ -242,13 +247,16 @@ namespace DownLoaderZakupki.Core.Jobs
                                     XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                     export exportd = xmlser.Deserialize(reader) as export;
 
-                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
 
 
                                     try
                                     {
                                         exportNsiETPs NsiETPs = exportd.Items[0] as exportNsiETPs;
                                         SaveNsiETP(NsiETPs.nsiETP);
+
+                                        nsiFile.Status = Status.Processed;
+                                        UpdateCasheFiles(nsiFile);
                                     }
                                     catch (Exception ex)
                                     {
@@ -260,6 +268,8 @@ namespace DownLoaderZakupki.Core.Jobs
                             }
                         }
                 }
+
+                Directory.Delete(extractPath, true);
             }
         }
 
@@ -342,12 +352,15 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                     XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                     export exportd = xmlser.Deserialize(reader) as export;
-                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
                                     //nsiPlacingWayList
                                     try
                                     {
                                         exportNsiPlacingWayList NsiPlacingWayList = exportd.Items[0] as exportNsiPlacingWayList;
                                         SavePlacingWay(NsiPlacingWayList.nsiPlacingWay);
+
+                                        nsiFile.Status = Status.Processed;
+                                        UpdateCasheFiles(nsiFile);
                                     }
                                     catch (Exception ex)
                                     {
@@ -359,6 +372,8 @@ namespace DownLoaderZakupki.Core.Jobs
                             }
                         }
                 }
+
+                Directory.Delete(extractPath, true);
             }
         }
 
@@ -427,6 +442,191 @@ namespace DownLoaderZakupki.Core.Jobs
                     }
 
                 }
+            }
+        }
+
+        void ParseNsiOrganization(List<NsiFileCashes> nsiFileCashes)
+        {
+            foreach (var nsiFile in nsiFileCashes)
+            {
+
+                string zipPath = (_nsiSettings44.WorkPath + nsiFile.Full_path);
+                string extractPath = (_nsiSettings44.WorkPath + "/extract" + nsiFile.Full_path);
+
+                if (Directory.Exists(extractPath))
+                {
+                    Directory.Delete(extractPath, true);
+                }
+                //и создаём её заново
+                Directory.CreateDirectory(extractPath);
+
+                if (File.Exists(zipPath))
+                {
+                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        {
+                            if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                            {
+                                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                                string xml_f_name = entry.FullName;
+                                string xmlin = (extractPath + "/" + entry.FullName);
+                                _logger.LogInformation("xmlin parse: " + xmlin);
+                                //xmlin = @"C:\FZ\000\nsiOrganizationList_all_20200315000006_287.xml";
+                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                {
+                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
+
+                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                    export exportd = xmlser.Deserialize(reader) as export;
+
+                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+
+
+                                    try
+                                    {
+                                        exportNsiOrganizationList nsiOrganizationList = exportd.Items[0] as exportNsiOrganizationList;
+                                        ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
+
+                                        nsiFile.Status = Status.Processed;
+                                        UpdateCasheFiles(nsiFile);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, ex.Message);
+                                    }
+
+                                }
+
+                            }
+                        }
+                }
+
+                Directory.Delete(extractPath, true);
+
+            }
+        }
+
+
+        void ParseNsiOrganizationList(zfcs_nsiOrganizationType[] OrganizationList)
+        {
+            List<NsiOrganizations> nsiOrganizations = new List<NsiOrganizations>();
+            foreach (var org in OrganizationList)
+            {
+                //ToDo Save Org
+                try
+                {
+                    NsiOrganizations nsiOrganization = new NsiOrganizations();
+                    if ((org.INN.Trim().Length == 10)|| (org.INN.Trim().Length == 12))
+                    {
+
+                        if (JsonConvert.SerializeObject(org.contactPerson) != null) nsiOrganization.ContactPerson = JsonConvert.SerializeObject(org.contactPerson);
+                        nsiOrganization.Email = org.email ?? string.Empty;
+                        if (JsonConvert.SerializeObject(org.factualAddress) != null) nsiOrganization.FactualAddress = JsonConvert.SerializeObject(org.factualAddress);
+                        nsiOrganization.Fax = org.fax ?? string.Empty;
+                        nsiOrganization.FullName = org.fullName ?? string.Empty;
+                        nsiOrganization.Inn = org.INN.Trim();
+                        nsiOrganization.IsActual = org.actual;
+                        nsiOrganization.Kpp = org.KPP ?? string.Empty;
+                        nsiOrganization.NsiData = JsonConvert.SerializeObject(org);
+                        nsiOrganization.Ogrn = org.OGRN ?? string.Empty;
+                        if (org.OKOPF != null) nsiOrganization.Okopf = org.OKOPF.code;
+                        //else nsiOrganization.Okopf = string.Empty;
+
+                        nsiOrganization.Okpo = org.OKPO ?? string.Empty;
+                        if (org.OKTMO != null) nsiOrganization.Oktmo = org.OKTMO.code;
+                        //else nsiOrganization.Oktmo = string.Empty;
+                        nsiOrganization.Okved = org.OKVED ?? string.Empty;
+                        nsiOrganization.Phone = org.phone ?? string.Empty;
+                        nsiOrganization.PostalAddress = org.postalAddress ?? string.Empty;
+                        nsiOrganization.RegistrationDate = org.registrationDate;
+                        nsiOrganization.RegNumber = org.regNumber;
+                        nsiOrganization.ShortName = org.shortName ?? string.Empty;
+                        nsiOrganization.TimeZone = org.timeZone;
+                        nsiOrganization.Url = org.url;
+                        if (org.accounts != null) nsiOrganization.Accounts = JsonConvert.SerializeObject(org.accounts);
+                        nsiOrganization.Fz_type = FLType.Fl44;
+
+                        nsiOrganizations.Add(nsiOrganization);
+#if true && DEBUG
+                        var json = JsonConvert.SerializeObject(org);
+#endif
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, ex.Message);
+                }
+
+            }
+
+            SaveNsiOrganizationList(nsiOrganizations);
+        }
+
+
+        void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations)
+        {
+
+            foreach (var organization in nsiOrganizations)
+            {
+                using (var db = _govDb.GetContext())
+                {
+                    try
+                    {
+                        var find = db.NsiOrganizations
+                        .AsNoTracking()
+                        .Where(x => x.Inn == organization.Inn)
+                        .SingleOrDefault();
+
+                        if (find == null)
+                        {
+                            db.NsiOrganizations.Add(organization);
+                            db.SaveChanges();
+                        }
+                        else
+                        {
+                            find.NsiData = organization.NsiData;
+                            find.ContactPerson = organization.ContactPerson;
+                            find.Email = organization.Email;
+                            find.FactualAddress = organization.FactualAddress;
+                            find.Fax = organization.Fax;
+                            find.FullName = organization.FullName;
+                            find.IsActual = organization.IsActual;
+                            find.Kpp = organization.Kpp;
+                            find.NsiData = organization.NsiData;
+                            find.Ogrn = organization.Ogrn;
+                            find.Okopf = organization.Okopf;
+                            find.Okpo = organization.Okpo;
+                            find.Oktmo = organization.Oktmo;
+                            find.Okved = organization.Okved;
+                            find.Phone = organization.Phone;
+                            find.PostalAddress = organization.PostalAddress;
+                            find.RegistrationDate = organization.RegistrationDate;
+                            find.RegNumber = organization.RegNumber;
+                            find.ShortName = organization.ShortName;
+                            find.TimeZone = organization.TimeZone;
+                            find.Url = organization.Url;
+                            find.Accounts = organization.Accounts;
+                            db.NsiOrganizations.Update(find);
+                            db.SaveChanges();
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+                }
+            }
+        }
+
+
+        private void UpdateCasheFiles(NsiFileCashes fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.NsiFileCashes.Update(fileCashes);
+                db.SaveChanges();
             }
         }
     }

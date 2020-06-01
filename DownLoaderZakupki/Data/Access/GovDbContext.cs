@@ -28,8 +28,8 @@ namespace DownLoaderZakupki.Data.Access
 #if true && DEBUG
             optionsBuilder.UseLoggerFactory(_loggerFactory);
 #endif
-            //optionsBuilder.UseNpgsql(_connectionString);
-            optionsBuilder.UseNpgsql("Host=192.168.1.60;Port=5432;Database=AimGov2;Username=postgres;Password=Zaq1Xsw2Z;Pooling=True");
+            optionsBuilder.UseNpgsql(_connectionString);
+            //optionsBuilder.UseNpgsql("Host=192.168.1.60;Port=5432;Database=AimGov2;Username=postgres;Password=Zaq1Xsw2Z;Pooling=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -44,6 +44,8 @@ namespace DownLoaderZakupki.Data.Access
         public DbSet<NsiEtps> NsiEtps { get; set; }
 
         public DbSet<NsiPlacingWays> NsiPlacingWays { get; set; }
+
+        public DbSet<NsiOrganizations> NsiOrganizations { get; set; }
 
         int IGovDbContext.SaveChanges()
         {

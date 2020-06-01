@@ -7,7 +7,10 @@ using System.Text;
 
 namespace DownLoaderZakupki.Data.DB
 {
-    public class NsiOrganization
+    /// <summary>
+    /// Организации зарегестрированные в ЕИС
+    /// </summary>
+    public class NsiOrganizations
     {
         [Key]
         public int Id { get; set; }
@@ -46,7 +49,7 @@ namespace DownLoaderZakupki.Data.DB
         /// <summary>
         /// ИНН заказчика
         /// </summary>
-        [Column(TypeName = "varchar(12)")]
+        [Column(TypeName = "varchar(10)")]
         public string Inn { get; set; }
 
         /// <summary>
@@ -117,6 +120,9 @@ namespace DownLoaderZakupki.Data.DB
         [Column(TypeName = "varchar(1024)")]
         public string PostalAddress { get; set; }
 
+        /// <summary>
+        /// Тип источника данных для разбора отличий по ФЗ-44 и ФЗ-223
+        /// </summary>
         public FLType Fz_type { get; set; }
 
     }

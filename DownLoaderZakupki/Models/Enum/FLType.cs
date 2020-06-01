@@ -49,7 +49,7 @@ namespace DownLoaderZakupki.Models.Enum
         /// <summary>
         /// Файл обработан и удалён
         /// </summary>
-        Вeleted =4
+        Deleted =4
     }
 }
 

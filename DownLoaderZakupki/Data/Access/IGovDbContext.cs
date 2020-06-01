@@ -33,6 +33,12 @@ namespace DownLoaderZakupki.Data.Access
         /// Справочник: Способы размещения заказов
         /// </summary>
         DbSet<NsiPlacingWays> NsiPlacingWays { get; set; }
+
+        /// <summary>
+        /// Справочник: Организации зарегестрированные в ЕИС
+        /// </summary>
+        DbSet<NsiOrganizations> NsiOrganizations { get; set; }
+
         int SaveChanges();
     }
 }

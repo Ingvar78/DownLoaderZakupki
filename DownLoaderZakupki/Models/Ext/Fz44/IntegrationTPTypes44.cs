@@ -5,7 +5,7 @@
 //
 //     Изменения в этом файле могут привести к неправильной работе и будут потеряны в случае
 //     повторной генерации кода.
-// ЕИС 10.0.4
+// ЕИС 10.1.2
 // </auto-generated>
 //------------------------------------------------------------------------------
 
@@ -215,7 +215,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         [System.Xml.Serialization.XmlElementAttribute("nsiDeviationFactFoundationList", typeof(exportNsiDeviationFactFoundationList))]
         [System.Xml.Serialization.XmlElementAttribute("nsiDrugChangeReasons", typeof(exportNsiDrugChangeReasons))]
         [System.Xml.Serialization.XmlElementAttribute("nsiDrugsOKEI", typeof(exportNsiDrugsOKEI))]
-        [System.Xml.Serialization.XmlElementAttribute("nsiEAESCountry", typeof(exportNsiEAESCountry))]
         [System.Xml.Serialization.XmlElementAttribute("nsiETPs", typeof(exportNsiETPs))]
         [System.Xml.Serialization.XmlElementAttribute("nsiEvalCriterionList", typeof(exportNsiEvalCriterionList))]
         [System.Xml.Serialization.XmlElementAttribute("nsiFarmDrugsDictionary", typeof(exportNsiFarmDrugsDictionary))]
@@ -1052,16 +1051,10 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         tenderPlan2017,
         
         /// <remarks/>
-        tenderPlan2020,
-        
-        /// <remarks/>
         tenderPlanChange,
         
         /// <remarks/>
         tenderPlanChange2017,
-        
-        /// <remarks/>
-        tenderPlanChange2020,
         
         /// <remarks/>
         tenderPlanUnstructured,
@@ -1316,22 +1309,19 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         cpProcedureCancelFailure,
         
         /// <remarks/>
-        fcsSentPackageListRequest,
+        sentPackageListRequest,
         
         /// <remarks/>
         sentPackageList,
         
         /// <remarks/>
-        fcsReSendPackage,
+        reSendPackage,
         
         /// <remarks/>
-        fcsReceivedPackageListRequest,
+        receivedPackageListRequest,
         
         /// <remarks/>
         receivedPackageList,
-        
-        /// <remarks/>
-        notificationRemoveDoc,
     }
     
     /// <remarks/>
@@ -7189,7 +7179,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
     }
     
     /// <remarks/>
@@ -7823,7 +7813,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
     }
     
     /// <remarks/>
@@ -9527,7 +9517,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
     }
     
     /// <remarks/>
@@ -9543,16 +9533,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public string maxPriceCurrency;
-        
-        /// <remarks/>
-        public bool mustPublicDiscussion;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
-        
-        /// <remarks/>
-        public publicDiscussionInfoType publicDiscussionInfo;
         
         /// <remarks/>
         public customerRequirementTypeContractConditionsInfoAdvancePaymentSum advancePaymentSum;
@@ -9580,39 +9560,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public string deliveryTerm;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://zakupki.gov.ru/oos/common/1")]
-    public partial class publicDiscussionInfoType {
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("publicDiscussionInEISInfo", typeof(publicDiscussionInfoTypePublicDiscussionInEISInfo))]
-        [System.Xml.Serialization.XmlElementAttribute("publicDiscussionNotInEIS", typeof(bool))]
-        public object Item;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/common/1")]
-    public partial class publicDiscussionInfoTypePublicDiscussionInEISInfo {
-        
-        /// <remarks/>
-        public bool publicDiscussionInEIS;
-        
-        /// <remarks/>
-        public string publicDiscussionNum;
-        
-        public publicDiscussionInfoTypePublicDiscussionInEISInfo() {
-            this.publicDiscussionInEIS = true;
-        }
     }
     
     /// <remarks/>
@@ -9770,11 +9717,11 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public purchaseIsMaxPriceCurrencyType isMaxPriceCurrency;
         
         /// <remarks/>
-        public bool isContractPriceFormula;
+        public bool isContactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isContractPriceFormulaSpecified;
+        public bool isContactPriceFormulaSpecified;
     }
     
     /// <remarks/>
@@ -10699,10 +10646,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool mustPublicDiscussion;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
-        
-        /// <remarks/>
         public publicDiscussionType publicDiscussionInfo;
         
         /// <remarks/>
@@ -10814,10 +10757,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public bool mustPublicDiscussion;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
         
         /// <remarks/>
         public publicDiscussionType publicDiscussionInfo;
@@ -10939,10 +10878,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool mustPublicDiscussion;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
-        
-        /// <remarks/>
         public publicDiscussionType publicDiscussionInfo;
     }
     
@@ -11051,10 +10986,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public bool mustPublicDiscussion;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
         
         /// <remarks/>
         public publicDiscussionType publicDiscussionInfo;
@@ -16247,44 +16178,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://zakupki.gov.ru/oos/types/1")]
-    public partial class zfcs_nsiEAESCountry {
-        
-        /// <remarks/>
-        public string name;
-        
-        /// <remarks/>
-        public string OKSMCode;
-        
-        /// <remarks/>
-        public string code2;
-        
-        /// <remarks/>
-        public string code3;
-        
-        /// <remarks/>
-        public int orderNumber;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool orderNumberSpecified;
-        
-        /// <remarks/>
-        public System.DateTime updateDate;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool updateDateSpecified;
-        
-        /// <remarks/>
-        public bool isActual;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://zakupki.gov.ru/oos/types/1")]
     public partial class zfcs_nsiTRUAdmissionNPA {
         
         /// <remarks/>
@@ -19886,13 +19779,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         public bool endDateSpecified;
-        
-        /// <remarks/>
-        public int countryFrom;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool countryFromSpecified;
     }
     
     /// <remarks/>
@@ -24162,24 +24048,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public zfcs_currencyRef maxPriceCurrency;
         
         /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("tenderPlan2020Info", typeof(zfcs_control99NotificationExtractTypeLotCustomerRequirementTenderPlan2020Info1))]
-        [System.Xml.Serialization.XmlElementAttribute("tenderPlanInfo", typeof(zfcs_control99NotificationExtractTypeLotCustomerRequirementTenderPlanInfo1))]
-        public object Item;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/types/1")]
-    public partial class zfcs_control99NotificationExtractTypeLotCustomerRequirementTenderPlan2020Info1 {
-        
-        /// <remarks/>
-        public string plan2020Number;
-        
-        /// <remarks/>
-        public string position2020Number;
+        public zfcs_control99NotificationExtractTypeLotCustomerRequirementTenderPlanInfo1 tenderPlanInfo;
     }
     
     /// <remarks/>
@@ -24265,13 +24134,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("contractProcedureInfo", IsNullable=false)]
         public zfcs_control99ContractExtractTypeContractProcedureInfo[] contractProceduresInfo;
-        
-        /// <remarks/>
-        public bool isSt14;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isSt14Specified;
         
         /// <remarks/>
         public zfcs_attachmentType printForm;
@@ -24360,20 +24222,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         public bool isAllKTRUSpecified;
-        
-        /// <remarks/>
-        public bool quantityUndefined;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool quantityUndefinedSpecified;
-        
-        /// <remarks/>
-        public bool isProductsCountry;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isProductsCountrySpecified;
     }
     
     /// <remarks/>
@@ -24389,7 +24237,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         [System.Xml.Serialization.XmlElementAttribute("contractInfo", typeof(bool))]
         [System.Xml.Serialization.XmlElementAttribute("contractProcedure", typeof(zfcs_control99ContractExtractTypeCommonInfoControlObjectTypeContractProcedure))]
         [System.Xml.Serialization.XmlElementAttribute("contractTermination", typeof(bool))]
-        [System.Xml.Serialization.XmlElementAttribute("refundOverpaymentsInfo", typeof(bool))]
         [System.Xml.Serialization.XmlChoiceIdentifierAttribute("ItemElementName")]
         public object Item;
         
@@ -24431,9 +24278,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         contractTermination,
-        
-        /// <remarks/>
-        refundOverpaymentsInfo,
     }
     
     /// <remarks/>
@@ -24647,18 +24491,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         otherDoc,
-        
-        /// <remarks/>
-        modificationReasonDoc,
-        
-        /// <remarks/>
-        returnReasonDoc,
-        
-        /// <remarks/>
-        productExaminationResultDoc,
-        
-        /// <remarks/>
-        contractTerminationGroundDoc,
     }
     
     /// <remarks/>
@@ -31265,7 +31097,10 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool publicDiscussionSpecified;
         
         /// <remarks/>
-        public publicDiscussionInfoType publicDiscussionInfo;
+        public string publicDiscussionPhase1Num;
+        
+        /// <remarks/>
+        public string publicDiscussionPhase1NumLink;
         
         /// <remarks/>
         public bool positionCanceled;
@@ -31286,12 +31121,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public tenderPlan2020PositionTypeCommonInfoJointBiddingAndCentrPurchInfo jointBiddingAndCentrPurchInfo;
-        
-        /// <remarks/>
-        public tenderPlan2020PositionTypeCommonInfoCentralizedPurchaseInfo centralizedPurchaseInfo;
-        
-        /// <remarks/>
-        public tenderPlan2020PositionTypeCommonInfoJointBiddingInfo jointBiddingInfo;
     }
     
     /// <remarks/>
@@ -31348,30 +31177,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public tenderPlan2020OrganizationType organizationInfo;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/TPtypes/1")]
-    public partial class tenderPlan2020PositionTypeCommonInfoCentralizedPurchaseInfo {
-        
-        /// <remarks/>
-        public tenderPlan2020OrganizationType centralizedPurchaseOrgInfo;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/TPtypes/1")]
-    public partial class tenderPlan2020PositionTypeCommonInfoJointBiddingInfo {
-        
-        /// <remarks/>
-        public tenderPlan2020OrganizationType jointBiddingOrgInfo;
     }
     
     /// <remarks/>
@@ -41485,9 +41290,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         ZK,
-        
-        /// <remarks/>
-        SGLF,
     }
     
     /// <remarks/>
@@ -44275,11 +44077,11 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public zfcs_purchaseBOInfoType BOInfo;
         
         /// <remarks/>
-        public bool isContractPriceFormula;
+        public bool isContactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isContractPriceFormulaSpecified;
+        public bool isContactPriceFormulaSpecified;
         
         /// <remarks/>
         public bool quantityUndefined;
@@ -49802,14 +49604,14 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool interbudgetaryTransferSpecified;
         
         /// <remarks/>
-        public bool isContractPriceFormula;
+        public bool isContactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isContractPriceFormulaSpecified;
+        public bool isContactPriceFormulaSpecified;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("purchaseObject", IsNullable=false)]
@@ -49870,9 +49672,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
         public bool mustPublicDiscussionSpecified;
-        
-        /// <remarks/>
-        public publicDiscussionInfoType publicDiscussionInfo;
         
         /// <remarks/>
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
@@ -51228,11 +51027,11 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool quantityUndefined;
         
         /// <remarks/>
-        public bool isContractPriceFormula;
+        public bool isContactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isContractPriceFormulaSpecified;
+        public bool isContactPriceFormulaSpecified;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("customerRequirement", IsNullable=false)]
@@ -51336,7 +51135,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
     }
     
     /// <remarks/>
@@ -51703,11 +51502,11 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool quantityUndefined;
         
         /// <remarks/>
-        public bool isContractPriceFormula;
+        public bool isContactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isContractPriceFormulaSpecified;
+        public bool isContactPriceFormulaSpecified;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("customerRequirement", IsNullable=false)]
@@ -51759,16 +51558,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public string maxPriceCurrency;
-        
-        /// <remarks/>
-        public bool mustPublicDiscussion;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
-        
-        /// <remarks/>
-        public publicDiscussionInfoType publicDiscussionInfo;
         
         /// <remarks/>
         public zfcs_lotOKTypeCustomerRequirementAdvancePaymentSum advancePaymentSum;
@@ -51827,7 +51616,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
     }
     
     /// <remarks/>
@@ -54102,11 +53891,11 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bool quantityUndefined;
         
         /// <remarks/>
-        public bool isContractPriceFormula;
+        public bool isContactPriceFormula;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool isContractPriceFormulaSpecified;
+        public bool isContactPriceFormulaSpecified;
         
         /// <remarks/>
         [System.Xml.Serialization.XmlArrayItemAttribute("customerRequirement", IsNullable=false)]
@@ -54174,16 +53963,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public string maxPriceCurrency;
         
         /// <remarks/>
-        public bool mustPublicDiscussion;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool mustPublicDiscussionSpecified;
-        
-        /// <remarks/>
-        public publicDiscussionInfoType publicDiscussionInfo;
-        
-        /// <remarks/>
         public zfcs_notificationEFTypeLotCustomerRequirementAdvancePaymentSum advancePaymentSum;
         
         /// <remarks/>
@@ -54237,7 +54016,7 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         public bankSupportContractRequiredInfoType bankSupportContractRequiredInfo;
         
         /// <remarks/>
-        public string contractPriceFormula;
+        public string contactPriceFormula;
     }
     
     /// <remarks/>
@@ -55446,12 +55225,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public string nomenclature;
-        
-        /// <remarks/>
-        public zfcs_countryRef originCountry;
-        
-        /// <remarks/>
-        public zfcs_countryRef registrationCountry;
     }
     
     /// <remarks/>
@@ -55575,9 +55348,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public zfcs_contractProcedure2015TypeExecutionsExecutionQuantityDrugContractSubjectsQuantityDrugContractSubjectPricesZNVLPInfo pricesZNVLPInfo;
-        
-        /// <remarks/>
-        public zfcs_countryRef originCountry;
     }
     
     /// <remarks/>
@@ -58822,16 +58592,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public string VATSumRUR;
-        
-        /// <remarks/>
-        public zfcs_countryRef originCountry;
-        
-        /// <remarks/>
-        public bool improvedProductReplacement;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlIgnoreAttribute()]
-        public bool improvedProductReplacementSpecified;
     }
     
     /// <remarks/>
@@ -59202,10 +58962,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public zfcs_contract2015TypeEnforcement enforcement;
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlArrayItemAttribute("NPAsInfo", IsNullable=false)]
-        public zfcs_contract2015TypeNPAsInfo[] st14Info;
         
         /// <remarks/>
         public zfcs_contract2015TypeQualityGuaranteeInfo qualityGuaranteeInfo;
@@ -60538,24 +60294,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         public string amountRUR;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/types/1")]
-    public partial class zfcs_contract2015TypeNPAsInfo {
-        
-        /// <remarks/>
-        public NPASt14Ref NPAInfo;
-        
-        /// <remarks/>
-        public string requirementType;
-        
-        /// <remarks/>
-        public string requirementName;
     }
     
     /// <remarks/>
@@ -63251,19 +62989,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/export/1")]
-    public partial class exportNsiEAESCountry {
-        
-        /// <remarks/>
-        [System.Xml.Serialization.XmlElementAttribute("nsiEAESCountry")]
-        public zfcs_nsiEAESCountry[] nsiEAESCountry;
-    }
-    
-    /// <remarks/>
-    [System.CodeDom.Compiler.GeneratedCodeAttribute("xsd", "4.7.3081.0")]
-    [System.SerializableAttribute()]
-    [System.Diagnostics.DebuggerStepThroughAttribute()]
-    [System.ComponentModel.DesignerCategoryAttribute("code")]
-    [System.Xml.Serialization.XmlTypeAttribute(AnonymousType=true, Namespace="http://zakupki.gov.ru/oos/export/1")]
     public partial class exportNsiETPs {
         
         /// <remarks/>
@@ -64412,9 +64137,6 @@ namespace DownLoaderZakupki.Models.Ext.Fz44
         
         /// <remarks/>
         nsiDrugsOKEI,
-        
-        /// <remarks/>
-        nsiEAESCountry,
         
         /// <remarks/>
         nsiETPs,
