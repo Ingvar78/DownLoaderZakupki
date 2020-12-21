@@ -13,6 +13,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 
 namespace DownLoaderZakupki.Core.Jobs
@@ -43,6 +44,7 @@ namespace DownLoaderZakupki.Core.Jobs
             {
                 var basepath = _nsiSettings44.BaseDir;
                 var dirlist = _nsiSettings44.DocDirList;
+                var parallels44 = _nsiSettings44.Parallels;
                 foreach (var dir in dirlist)
                 {
                     switch (dir)
@@ -447,63 +449,66 @@ namespace DownLoaderZakupki.Core.Jobs
 
         void ParseNsiOrganization(List<NsiFileCashes> nsiFileCashes)
         {
-            foreach (var nsiFile in nsiFileCashes)
-            {
-
-                string zipPath = (_nsiSettings44.WorkPath + nsiFile.Full_path);
-                string extractPath = (_nsiSettings44.WorkPath + "/extract" + nsiFile.Full_path);
-
-                if (Directory.Exists(extractPath))
+            //foreach (var nsiFile in nsiFileCashes)
+            Parallel.ForEach(nsiFileCashes,
+                new ParallelOptions { MaxDegreeOfParallelism = _nsiSettings44.Parallels },
+                (nsiFile) =>
                 {
-                    Directory.Delete(extractPath, true);
-                }
-                //и создаём её заново
-                Directory.CreateDirectory(extractPath);
 
-                if (File.Exists(zipPath))
-                {
-                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
-                        foreach (ZipArchiveEntry entry in archive.Entries)
-                        {
-                            if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                    string zipPath = (_nsiSettings44.WorkPath + nsiFile.Full_path);
+                    string extractPath = (_nsiSettings44.WorkPath + "/extract" + nsiFile.Full_path);
+
+                    if (Directory.Exists(extractPath))
+                    {
+                        Directory.Delete(extractPath, true);
+                    }
+                    //и создаём её заново
+                    Directory.CreateDirectory(extractPath);
+
+                    if (File.Exists(zipPath))
+                    {
+                        using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                            foreach (ZipArchiveEntry entry in archive.Entries)
                             {
-                                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
-                                string xml_f_name = entry.FullName;
-                                string xmlin = (extractPath + "/" + entry.FullName);
-                                _logger.LogInformation("xmlin parse: " + xmlin);
-                                //xmlin = @"C:\FZ\000\nsiOrganizationList_all_20200315000006_287.xml";
-                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
-
-                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
-                                    export exportd = xmlser.Deserialize(reader) as export;
-
-                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-
-
-                                    try
+                                    entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                                    string xml_f_name = entry.FullName;
+                                    string xmlin = (extractPath + "/" + entry.FullName);
+                                    _logger.LogInformation("xmlin parse: " + xmlin);
+                                    //xmlin = @"C:\FZ\000\nsiOrganizationList_all_20200315000006_287.xml";
+                                    using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                     {
-                                        exportNsiOrganizationList nsiOrganizationList = exportd.Items[0] as exportNsiOrganizationList;
-                                        ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
+                                        XmlSerializer serializer = new XmlSerializer(typeof(export));
 
-                                        nsiFile.Status = Status.Processed;
-                                        UpdateCasheFiles(nsiFile);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, ex.Message);
+                                        XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                        export exportd = xmlser.Deserialize(reader) as export;
+
+                                        //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+
+
+                                        try
+                                        {
+                                            exportNsiOrganizationList nsiOrganizationList = exportd.Items[0] as exportNsiOrganizationList;
+                                            ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
+
+                                            nsiFile.Status = Status.Processed;
+                                            UpdateCasheFiles(nsiFile);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.LogError(ex, ex.Message);
+                                        }
+
                                     }
 
                                 }
-
                             }
-                        }
-                }
+                    }
 
-                Directory.Delete(extractPath, true);
+                    Directory.Delete(extractPath, true);
 
-            }
+                });
         }
 
 
