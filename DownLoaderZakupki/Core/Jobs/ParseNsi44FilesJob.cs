@@ -25,10 +25,12 @@ namespace DownLoaderZakupki.Core.Jobs
         private readonly ILogger _logger;
         private readonly IGovDbManager _govDb;
         private readonly string _path;
+        private readonly IDataServices _getDataServices;
         public ParseNsi44FilesJob(CommonSettings commonSettings,
             NsiSettings44 nsiSettings44,
             IGovDbManager govDb,
-            ILogger logger
+            ILogger logger,
+            IDataServices getDataServices
             )
         {
             _commonSettings = commonSettings;
@@ -36,6 +38,7 @@ namespace DownLoaderZakupki.Core.Jobs
             _govDb = govDb;
             _logger = logger;
             _path = commonSettings.BasePath;
+            _getDataServices = getDataServices;
         }
 
         void IJob.Execute()
@@ -51,24 +54,24 @@ namespace DownLoaderZakupki.Core.Jobs
                     {
                         case "nsiAbandonedReason":
                             {
-                                ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                //ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                ParsensiAbandonedReason(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "nsiOrganization":
                             {
-                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                ParseNsiOrganization(tt);
+                                
+                                ParseNsiOrganization(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "nsiPlacingWay":
                             {
-                                var tt = GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                ParsensiPlacingWay(tt);
+                                ParsensiPlacingWay(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "nsiETP":
                             {
-                                ParsensiETP(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                ParsensiETP(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
 
@@ -84,26 +87,6 @@ namespace DownLoaderZakupki.Core.Jobs
             }
         }
 
-
-        List<NsiFileCashes> GetDBList(int lim, Status status, FLType fz_type, string basepath, string dirtype)
-        {
-            List<NsiFileCashes> data = new List<NsiFileCashes>();
-
-            using (var db = _govDb.GetContext())
-            {
-                data = db.NsiFileCashes
-                    .AsNoTracking()
-                    .Where(x => x.Status == status
-                    && x.Fz_type == fz_type
-                    && x.BaseDir == basepath
-                    && x.Dirtype == dirtype)
-                    .OrderBy(x => x.Date)
-                    //.OrderByDescending(x => x.Date)
-                    .Take(lim)
-                    .ToList();
-            }
-            return data;
-        }
 
         void ParsensiAbandonedReason(List<NsiFileCashes> nsiFileCashes)
         {
@@ -144,7 +127,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                         SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
 
                                         nsiFile.Status = Status.Processed;
-                                        UpdateCasheFiles(nsiFile);
+                                        _getDataServices.UpdateCasheFiles(nsiFile);
 
                                     }
                                     catch (Exception ex)
@@ -258,7 +241,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                         SaveNsiETP(NsiETPs.nsiETP);
 
                                         nsiFile.Status = Status.Processed;
-                                        UpdateCasheFiles(nsiFile);
+                                        _getDataServices.UpdateCasheFiles(nsiFile);
                                     }
                                     catch (Exception ex)
                                     {
@@ -362,7 +345,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                         SavePlacingWay(NsiPlacingWayList.nsiPlacingWay);
 
                                         nsiFile.Status = Status.Processed;
-                                        UpdateCasheFiles(nsiFile);
+                                        _getDataServices.UpdateCasheFiles(nsiFile);
                                     }
                                     catch (Exception ex)
                                     {
@@ -493,7 +476,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                             ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
 
                                             nsiFile.Status = Status.Processed;
-                                            UpdateCasheFiles(nsiFile);
+                                            _getDataServices.UpdateCasheFiles(nsiFile);
                                         }
                                         catch (Exception ex)
                                         {
@@ -568,7 +551,6 @@ namespace DownLoaderZakupki.Core.Jobs
             SaveNsiOrganizationList(nsiOrganizations);
         }
 
-
         void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations)
         {
 
@@ -625,14 +607,5 @@ namespace DownLoaderZakupki.Core.Jobs
             }
         }
 
-
-        private void UpdateCasheFiles(NsiFileCashes fileCashes)
-        {
-            using (var db = _govDb.GetContext())
-            {
-                db.NsiFileCashes.Update(fileCashes);
-                db.SaveChanges();
-            }
-        }
     }
 }

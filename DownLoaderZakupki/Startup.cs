@@ -1,5 +1,6 @@
 ﻿using DownLoaderZakupki.Configurations;
 using DownLoaderZakupki.Core;
+using DownLoaderZakupki.Core.Services;
 using FluentScheduler;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
