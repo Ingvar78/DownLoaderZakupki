@@ -25,7 +25,7 @@ namespace DownLoaderZakupki.Core.Jobs
         private readonly ILogger _logger;
         private readonly IGovDbManager _govDb;
         private readonly string _path;
-        private readonly IDataServices _getDataServices;
+        private readonly IDataServices _dataServices;
         public ParseNsi44FilesJob(CommonSettings commonSettings,
             NsiSettings44 nsiSettings44,
             IGovDbManager govDb,
@@ -38,7 +38,7 @@ namespace DownLoaderZakupki.Core.Jobs
             _govDb = govDb;
             _logger = logger;
             _path = commonSettings.BasePath;
-            _getDataServices = getDataServices;
+            _dataServices = getDataServices;
         }
 
         void IJob.Execute()
@@ -55,23 +55,23 @@ namespace DownLoaderZakupki.Core.Jobs
                         case "nsiAbandonedReason":
                             {
                                 //ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
-                                ParsensiAbandonedReason(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                ParsensiAbandonedReason(_dataServices.GetNsiDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "nsiOrganization":
                             {
                                 
-                                ParseNsiOrganization(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                ParseNsiOrganization(_dataServices.GetNsiDBList(200, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "nsiPlacingWay":
                             {
-                                ParsensiPlacingWay(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                ParsensiPlacingWay(_dataServices.GetNsiDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "nsiETP":
                             {
-                                ParsensiETP(_getDataServices.GetDBList1(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                ParsensiETP(_dataServices.GetNsiDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
 
@@ -80,6 +80,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                 }
 
+                _logger.LogInformation("Закончена обработка справочников ФЗ-44");
             }
             catch (Exception ex)
             {
@@ -127,7 +128,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                         SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
 
                                         nsiFile.Status = Status.Processed;
-                                        _getDataServices.UpdateCasheFiles(nsiFile);
+                                        _dataServices.UpdateCasheFiles(nsiFile);
 
                                     }
                                     catch (Exception ex)
@@ -215,7 +216,9 @@ namespace DownLoaderZakupki.Core.Jobs
 
                 if (File.Exists(zipPath))
                 {
-                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                    try
+                    {
+                        using (ZipArchive archive = ZipFile.OpenRead(zipPath))
                         foreach (ZipArchiveEntry entry in archive.Entries)
                         {
                             if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
@@ -233,25 +236,22 @@ namespace DownLoaderZakupki.Core.Jobs
                                     export exportd = xmlser.Deserialize(reader) as export;
 
                                     //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-
-
-                                    try
-                                    {
                                         exportNsiETPs NsiETPs = exportd.Items[0] as exportNsiETPs;
                                         SaveNsiETP(NsiETPs.nsiETP);
-
-                                        nsiFile.Status = Status.Processed;
-                                        _getDataServices.UpdateCasheFiles(nsiFile);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, ex.Message);
-                                    }
 
                                 }
 
                             }
                         }
+                        nsiFile.Status = Status.Processed;
+                        _dataServices.UpdateCasheFiles(nsiFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                        nsiFile.Status = Status.Data_Error;
+                        _dataServices.UpdateCasheFiles(nsiFile);
+                    }
                 }
 
                 Directory.Delete(extractPath, true);
@@ -321,7 +321,9 @@ namespace DownLoaderZakupki.Core.Jobs
 
                 if (File.Exists(zipPath))
                 {
-                    using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                    try
+                    {
+                        using (ZipArchive archive = ZipFile.OpenRead(zipPath))
                         foreach (ZipArchiveEntry entry in archive.Entries)
                         {
                             if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
@@ -339,23 +341,24 @@ namespace DownLoaderZakupki.Core.Jobs
                                     export exportd = xmlser.Deserialize(reader) as export;
                                     //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
                                     //nsiPlacingWayList
-                                    try
-                                    {
+                                    
                                         exportNsiPlacingWayList NsiPlacingWayList = exportd.Items[0] as exportNsiPlacingWayList;
                                         SavePlacingWay(NsiPlacingWayList.nsiPlacingWay);
 
-                                        nsiFile.Status = Status.Processed;
-                                        _getDataServices.UpdateCasheFiles(nsiFile);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, ex.Message);
-                                    }
 
                                 }
 
                             }
                         }
+                        nsiFile.Status = Status.Processed;
+                        _dataServices.UpdateCasheFiles(nsiFile);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                        nsiFile.Status = Status.Data_Error;
+                        _dataServices.UpdateCasheFiles(nsiFile);
+                    }
                 }
 
                 Directory.Delete(extractPath, true);
@@ -440,53 +443,69 @@ namespace DownLoaderZakupki.Core.Jobs
 
                     string zipPath = (_nsiSettings44.WorkPath + nsiFile.Full_path);
                     string extractPath = (_nsiSettings44.WorkPath + "/extract" + nsiFile.Full_path);
-
+                    //zipPath= @"C:\Work2\Fz44\fcs_nsi\nsiOrganization\nsiOrganizationList_all_20201227000000_174.xml.zip";
                     if (Directory.Exists(extractPath))
                     {
                         Directory.Delete(extractPath, true);
                     }
                     //и создаём её заново
                     Directory.CreateDirectory(extractPath);
-
                     if (File.Exists(zipPath))
                     {
-                        using (ZipArchive archive = ZipFile.OpenRead(zipPath))
-                            foreach (ZipArchiveEntry entry in archive.Entries)
-                            {
-                                if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+                        try
+                        {
+                            using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+                                foreach (ZipArchiveEntry entry in archive.Entries)
                                 {
-                                    entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
-                                    string xml_f_name = entry.FullName;
-                                    string xmlin = (extractPath + "/" + entry.FullName);
-                                    _logger.LogInformation("xmlin parse: " + xmlin);
-                                    //xmlin = @"C:\FZ\000\nsiOrganizationList_all_20200315000006_287.xml";
-                                    using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                    if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                                     {
-                                        XmlSerializer serializer = new XmlSerializer(typeof(export));
-
-                                        XmlSerializer xmlser = new XmlSerializer(typeof(export));
-                                        export exportd = xmlser.Deserialize(reader) as export;
-
-                                        //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-
-
-                                        try
+                                        entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                                        string xml_f_name = entry.FullName;
+                                        string xmlin = (extractPath + "/" + entry.FullName);
+                                        _logger.LogInformation("xmlin parse: " + xmlin);
+                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
+                                            XmlSerializer serializer = new XmlSerializer(typeof(export));
+
+                                            XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                            export exportd = xmlser.Deserialize(reader) as export;
+
                                             exportNsiOrganizationList nsiOrganizationList = exportd.Items[0] as exportNsiOrganizationList;
                                             ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
 
-                                            nsiFile.Status = Status.Processed;
-                                            _getDataServices.UpdateCasheFiles(nsiFile);
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, ex.Message);
                                         }
 
                                     }
-
                                 }
+                            nsiFile.Status = Status.Processed;
+                            _dataServices.UpdateCasheFiles(nsiFile);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, ex.Message);
+                            //nsiFile.Status = Status.Data_Error;
+                            //_dataServices.UpdateCasheFiles(nsiFile);
+
+                            //string[] paths = new string[] { @"C:\Work2\Fz44\", "error", nsiFile.BaseDir, nsiFile.Dirtype};
+                            //string fullPath = Path.Combine(paths);
+                            //Console.WriteLine(fullPath);
+
+                            string[] paths = { _nsiSettings44.WorkPath, @"error", nsiFile.BaseDir, nsiFile.Dirtype };
+                            string fullPath = Path.Combine(paths);
+                            Console.WriteLine(fullPath);
+
+
+                            string errorPath = (_nsiSettings44.WorkPath + "error" + nsiFile.BaseDir + nsiFile.Dirtype);
+                            if (!Directory.Exists(fullPath))
+                            {
+                                Directory.CreateDirectory(fullPath);
                             }
+
+                            errorPath = (errorPath + nsiFile.Zip_file);
+
+                            File.Copy(zipPath, errorPath);
+                            
+                        }
                     }
 
                     Directory.Delete(extractPath, true);
@@ -507,105 +526,36 @@ namespace DownLoaderZakupki.Core.Jobs
                     if ((org.INN.Trim().Length == 10)|| (org.INN.Trim().Length == 12))
                     {
 
-                        if (JsonConvert.SerializeObject(org.contactPerson) != null) nsiOrganization.ContactPerson = JsonConvert.SerializeObject(org.contactPerson);
-                        nsiOrganization.Email = org.email ?? string.Empty;
-                        if (JsonConvert.SerializeObject(org.factualAddress) != null) nsiOrganization.FactualAddress = JsonConvert.SerializeObject(org.factualAddress);
-                        nsiOrganization.Fax = org.fax ?? string.Empty;
+                        if (org.accounts != null) nsiOrganization.Accounts = JsonConvert.SerializeObject(org.accounts);
                         nsiOrganization.FullName = org.fullName ?? string.Empty;
                         nsiOrganization.Inn = org.INN.Trim();
-                        nsiOrganization.IsActual = org.actual;
                         nsiOrganization.Kpp = org.KPP ?? string.Empty;
-                        nsiOrganization.NsiData = JsonConvert.SerializeObject(org);
                         nsiOrganization.Ogrn = org.OGRN ?? string.Empty;
-                        if (org.OKOPF != null) nsiOrganization.Okopf = org.OKOPF.code;
-                        //else nsiOrganization.Okopf = string.Empty;
-
-                        nsiOrganization.Okpo = org.OKPO ?? string.Empty;
-                        if (org.OKTMO != null) nsiOrganization.Oktmo = org.OKTMO.code;
-                        //else nsiOrganization.Oktmo = string.Empty;
-                        nsiOrganization.Okved = org.OKVED ?? string.Empty;
-                        nsiOrganization.Phone = org.phone ?? string.Empty;
-                        nsiOrganization.PostalAddress = org.postalAddress ?? string.Empty;
+                        nsiOrganization.IsActual = org.actual;                      
+                        nsiOrganization.NsiData = JsonConvert.SerializeObject(org);
                         nsiOrganization.RegistrationDate = org.registrationDate;
                         nsiOrganization.RegNumber = org.regNumber;
-                        nsiOrganization.ShortName = org.shortName ?? string.Empty;
-                        nsiOrganization.TimeZone = org.timeZone;
-                        nsiOrganization.Url = org.url;
-                        if (org.accounts != null) nsiOrganization.Accounts = JsonConvert.SerializeObject(org.accounts);
                         nsiOrganization.Fz_type = FLType.Fl44;
 
                         nsiOrganizations.Add(nsiOrganization);
 #if true && DEBUG
                         var json = JsonConvert.SerializeObject(org);
 #endif
+
                     }
                 }
 
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, ex.Message);
+                    //44
                 }
 
             }
 
-            SaveNsiOrganizationList(nsiOrganizations);
+            _dataServices.SaveNsiOrganizationList(nsiOrganizations);
         }
 
-        void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations)
-        {
-
-            foreach (var organization in nsiOrganizations)
-            {
-                using (var db = _govDb.GetContext())
-                {
-                    try
-                    {
-                        var find = db.NsiOrganizations
-                        .AsNoTracking()
-                        .Where(x => x.Inn == organization.Inn)
-                        .SingleOrDefault();
-
-                        if (find == null)
-                        {
-                            db.NsiOrganizations.Add(organization);
-                            db.SaveChanges();
-                        }
-                        else
-                        {
-                            find.NsiData = organization.NsiData;
-                            find.ContactPerson = organization.ContactPerson;
-                            find.Email = organization.Email;
-                            find.FactualAddress = organization.FactualAddress;
-                            find.Fax = organization.Fax;
-                            find.FullName = organization.FullName;
-                            find.IsActual = organization.IsActual;
-                            find.Kpp = organization.Kpp;
-                            find.NsiData = organization.NsiData;
-                            find.Ogrn = organization.Ogrn;
-                            find.Okopf = organization.Okopf;
-                            find.Okpo = organization.Okpo;
-                            find.Oktmo = organization.Oktmo;
-                            find.Okved = organization.Okved;
-                            find.Phone = organization.Phone;
-                            find.PostalAddress = organization.PostalAddress;
-                            find.RegistrationDate = organization.RegistrationDate;
-                            find.RegNumber = organization.RegNumber;
-                            find.ShortName = organization.ShortName;
-                            find.TimeZone = organization.TimeZone;
-                            find.Url = organization.Url;
-                            find.Accounts = organization.Accounts;
-                            db.NsiOrganizations.Update(find);
-                            db.SaveChanges();
-                        }
-
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, ex.Message);
-                    }
-                }
-            }
-        }
 
     }
 }

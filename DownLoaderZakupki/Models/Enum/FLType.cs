@@ -49,7 +49,12 @@ namespace DownLoaderZakupki.Models.Enum
         /// <summary>
         /// Файл обработан и удалён
         /// </summary>
-        Deleted =4
+        Deleted = 4,
+        /// <summary>
+        /// Ошибка обработки файла
+        /// </summary>
+        Data_Error = 5
+
     }
 }
 

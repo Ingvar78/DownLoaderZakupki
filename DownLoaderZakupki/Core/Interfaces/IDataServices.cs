@@ -10,8 +10,9 @@ namespace DownLoaderZakupki.Core.Interfaces
 {
     public interface IDataServices
     {
-        List<NsiFileCashes> GetDBList1(int lim, Status status, FLType fz_type, string basepath, string dirtype);
+        List<NsiFileCashes> GetNsiDBList(int lim, Status status, FLType fz_type, string basepath, string dirtype);
         public void UpdateCasheFiles(NsiFileCashes fileCashes);
+        public void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations);
 
     }
 }

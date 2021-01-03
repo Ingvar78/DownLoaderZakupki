@@ -12,13 +12,10 @@ namespace DownLoaderZakupki.Core
     {
             public static void RegisterServices(IServiceCollection services)
             {
-                //Доступ к БД приложения
-                services.AddTransient<IGovDbManager, GovDbManager>();
-                //
-                services.AddTransient<JobsRegister>();
-            // Серсвис работы с БД
+            
+            services.AddTransient<IGovDbManager, GovDbManager>();
             services.AddTransient<IDataServices, DataServices>();
-
+            services.AddTransient<JobsRegister>();
         }
 
 

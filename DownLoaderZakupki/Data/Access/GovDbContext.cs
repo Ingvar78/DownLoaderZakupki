@@ -18,10 +18,19 @@ namespace DownLoaderZakupki.Data.Access
             _loggerFactory = loggerFactory;
         }
 
+
+
+        public GovDbContext(DbContextOptions<GovDbContext> options): base(options)
+        {
+        }
+
         public GovDbContext()
         {
             //Для миграции   
+            //Database.EnsureDeleted();
+            //Database.EnsureCreated();
         }
+
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

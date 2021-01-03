@@ -22,7 +22,7 @@ namespace DownLoaderZakupki.Core.Services
             _govDb = govDb;
             _logger = logger;
         }
-        public List<NsiFileCashes> GetDBList1(int lim, Status status, FLType fz_type, string basepath, string dirtype)
+        public List<NsiFileCashes> GetNsiDBList(int lim, Status status, FLType fz_type, string basepath, string dirtype)
         {
             //throw new NotImplementedException();
 
@@ -50,6 +50,50 @@ namespace DownLoaderZakupki.Core.Services
             {
                 db.NsiFileCashes.Update(fileCashes);
                 db.SaveChanges();
+            }
+        }
+
+
+        public void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations)
+        {
+
+            foreach (var organization in nsiOrganizations)
+            {
+                using (var db = _govDb.GetContext())
+                {
+                    try
+                    {
+                        var find = db.NsiOrganizations
+                        .AsNoTracking()
+                        .Where(x => x.RegNumber == organization.RegNumber
+                        && x.Fz_type==organization.Fz_type)
+                        .SingleOrDefault();
+
+                        if (find == null)
+                        {
+                            db.NsiOrganizations.Add(organization);
+                            db.SaveChanges();
+                        }
+                        else
+                        {
+                            find.NsiData = organization.NsiData;
+                            find.FullName = organization.FullName;
+                            find.IsActual = organization.IsActual;
+                            find.Inn = organization.Inn ?? string.Empty;
+                            find.Kpp = organization.Kpp?? string.Empty;
+                            find.Ogrn = organization.Ogrn ?? string.Empty;
+                            find.RegistrationDate = organization.RegistrationDate;                           
+                            find.Accounts = organization.Accounts;
+                            db.NsiOrganizations.Update(find);
+                            db.SaveChanges();
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+                }
             }
         }
     }

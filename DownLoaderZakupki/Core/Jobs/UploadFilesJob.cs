@@ -121,6 +121,12 @@ namespace DownLoaderZakupki.Core.Jobs
                             client.Connect();
                             //_logger.LogInformation("connect to ftp 44, region for download: " + region);
                             var ftpPath = $"/{basedir44}/{region}/{DirsDoc}/";
+
+                            string[] paths = { basedir44, region, DirsDoc};
+                            string fullPath = Path.Combine(paths);
+                            Console.WriteLine(fullPath);
+
+
                             var fileList = client.GetListing(ftpPath, FtpListOption.Recursive);
                             var ftpList = fileList.Where(item => item.Size > _fzSettings44.EmptyZipSize && item.Type == FtpFileSystemObjectType.File && item.Modified > ModDate).ToList();
                             //ToDo Реализовать обработку списка файлов, через кэширование записей. 

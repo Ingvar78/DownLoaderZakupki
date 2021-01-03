@@ -1,10 +1,12 @@
 ﻿using DownLoaderZakupki.Configurations;
 using DownLoaderZakupki.Core;
 using DownLoaderZakupki.Core.Services;
+using DownLoaderZakupki.Data.Access;
 using FluentScheduler;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,10 +40,14 @@ namespace DownLoaderZakupki
             services.Configure<NsiSettings44>(Configuration.GetSection("NsiSettings44"));
             services.Configure<NsiSettings223>(Configuration.GetSection("NsiSettings223"));
 
+            services.AddDbContext<GovDbContext>(options => options.UseNpgsql(Configuration.GetConnectionString("ConnectionGDB")));
+            
+
             services.AddSingleton<ILoggerFactory, LoggerFactory>();
-            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));           
             services.AddLogging((conf) => conf.SetMinimumLevel(LogLevel.Trace));
             services.AddEntityFrameworkNpgsql();
+            
 
 
             InjectorBootStrapper.RegisterServices(services);
