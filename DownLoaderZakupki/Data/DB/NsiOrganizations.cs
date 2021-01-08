@@ -18,7 +18,7 @@ namespace DownLoaderZakupki.Data.DB
         /// <summary>
         /// Код по СПЗ
         /// </summary>
-        [Column(TypeName = "varchar(12)")]
+        [Column(TypeName = "varchar(20)")]
         public string RegNumber { get; set; }
 
         /// <summary>

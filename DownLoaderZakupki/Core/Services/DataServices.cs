@@ -22,6 +22,18 @@ namespace DownLoaderZakupki.Core.Services
             _govDb = govDb;
             _logger = logger;
         }
+
+        #region NSI File Cash
+
+        /// <summary>
+        /// Получение списка файлов из кэша.
+        /// </summary>
+        /// <param name="lim"></param>
+        /// <param name="status"></param>
+        /// <param name="fz_type"></param>
+        /// <param name="basepath"></param>
+        /// <param name="dirtype"></param>
+        /// <returns></returns>
         public List<NsiFileCashes> GetNsiDBList(int lim, Status status, FLType fz_type, string basepath, string dirtype)
         {
             //throw new NotImplementedException();
@@ -44,7 +56,11 @@ namespace DownLoaderZakupki.Core.Services
             return data;
         }
 
-        public void UpdateCasheFiles(NsiFileCashes fileCashes)
+        /// <summary>
+        /// Обновление статусов кэша файлов 
+        /// </summary>
+        /// <param name="fileCashes"></param>
+        public void UpdateNsiCasheFiles(NsiFileCashes fileCashes)
         {
             using (var db = _govDb.GetContext())
             {
@@ -53,8 +69,11 @@ namespace DownLoaderZakupki.Core.Services
             }
         }
 
-
-        public void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations)
+        /// <summary>
+        /// Сохранение данных организации из справочника.
+        /// </summary>
+        /// <param name="nsiOrganizations"></param>
+        public void SaveNsiOrgList(List<NsiOrganizations> nsiOrganizations)
         {
 
             foreach (var organization in nsiOrganizations)
@@ -96,5 +115,12 @@ namespace DownLoaderZakupki.Core.Services
                 }
             }
         }
+
+        #endregion NSI File Cash
+
+        #region 1
+        
+        #endregion 1
+
     }
 }

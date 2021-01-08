@@ -115,35 +115,42 @@ namespace DownLoaderZakupki.Core.Jobs
                                     string xmlin = (extractPath + "/" + entry.FullName);
                                     _logger.LogInformation("xmlin parse: " + xmlin);
                                     //xmlin = @"C:\Work2\Fz223\out\nsi\111\nsiOrganization_all_20201220_010000_001.xml";
-                                    using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+
+                                    FileInfo infoCheck = new FileInfo(xmlin);
+                                    if (infoCheck.Length != 0)
                                     {
-                                        XmlSerializer serializer = new XmlSerializer(typeof(nsiOrganization));
-
-                                        XmlSerializer xmlser = new XmlSerializer(typeof(nsiOrganization));
-                                        nsiOrganization exportd = xmlser.Deserialize(reader) as nsiOrganization;
-
-                                        //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-
-
-                                        try
+                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
+                                            XmlSerializer serializer = new XmlSerializer(typeof(nsiOrganization));
+
+                                            XmlSerializer xmlser = new XmlSerializer(typeof(nsiOrganization));
+                                            nsiOrganization exportd = xmlser.Deserialize(reader) as nsiOrganization;
+
+                                            //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
 
 
-                                            nsiOrganizationItemType[] nsiOrganizationList = exportd.body as nsiOrganizationItemType[];
+                                            try
+                                            {
 
-                                            Console.WriteLine(nsiOrganizationList.Length);
-                                            ParseNsiOrganizationList(exportd.body);
+                                                nsiOrganizationItemType[] nsiOrganizationList = exportd.body as nsiOrganizationItemType[];
+                                                _logger.LogInformation($"Поступило в обработку {nsiOrganizationList.Length} организаций");
+                                                //Console.WriteLine(nsiOrganizationList.Length);
+                                                ParseNsiOrganizationList(exportd.body);
+                                                nsiFile.Status = Status.Processed;
+                                                _dataServices.UpdateNsiCasheFiles(nsiFile);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                _logger.LogError(ex, ex.Message);
+                                            }
 
-                                            nsiFile.Status = Status.Processed;
-                                            _dataServices.UpdateCasheFiles(nsiFile);
                                         }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, ex.Message);
-                                        }
-
                                     }
-
+                                    else
+                                    {
+                                        nsiFile.Status = Status.Data_Error;
+                                        _dataServices.UpdateNsiCasheFiles(nsiFile);
+                                    }
                                 }
                             }
                     }
@@ -195,7 +202,8 @@ namespace DownLoaderZakupki.Core.Jobs
 
             }
 
-            _dataServices.SaveNsiOrganizationList(nsiOrganizations);
+            _logger.LogInformation($"Обработано {nsiOrganizations.Count} организаций");
+            _dataServices.SaveNsiOrgList(nsiOrganizations);
             //SaveNsiOrganizationList(nsiOrganizations);
         }
     }

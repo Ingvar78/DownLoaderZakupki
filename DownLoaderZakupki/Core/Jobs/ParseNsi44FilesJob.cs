@@ -55,6 +55,7 @@ namespace DownLoaderZakupki.Core.Jobs
                         case "nsiAbandonedReason":
                             {
                                 //ParsensiAbandonedReason(GetDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                //var tt = _dataServices.GetNsiDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 ParsensiAbandonedReason(_dataServices.GetNsiDBList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
@@ -115,29 +116,36 @@ namespace DownLoaderZakupki.Core.Jobs
                                 string xmlin = (extractPath + "/" + entry.FullName);
                                 _logger.LogInformation("xmlin parse: " + xmlin);
 
-                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                FileInfo infoCheck = new FileInfo(xmlin);
+                                if (infoCheck.Length != 0)
                                 {
-                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
-
-                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
-                                    export exportd = xmlser.Deserialize(reader) as export;
-                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                    try
+                                    using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                     {
-                                        exportNsiAbandonedReasonList exportNsiAbandoned = exportd.Items[0] as exportNsiAbandonedReasonList;
-                                        SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
+                                        XmlSerializer serializer = new XmlSerializer(typeof(export));
 
-                                        nsiFile.Status = Status.Processed;
-                                        _dataServices.UpdateCasheFiles(nsiFile);
+                                        XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                        export exportd = xmlser.Deserialize(reader) as export;
+                                        //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                        try
+                                        {
+                                            exportNsiAbandonedReasonList exportNsiAbandoned = exportd.Items[0] as exportNsiAbandonedReasonList;
+
+#if true && DEBUG
+                                            var json = JsonConvert.SerializeObject(exportNsiAbandoned.nsiAbandonedReason);
+#endif
+                                            SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
+
+                                            nsiFile.Status = Status.Processed;
+                                            _dataServices.UpdateNsiCasheFiles(nsiFile);
+
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _logger.LogError(ex, ex.Message);
+                                        }
 
                                     }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, ex.Message);
-                                    }
-
                                 }
-
                             }
                         }
                 }
@@ -223,34 +231,37 @@ namespace DownLoaderZakupki.Core.Jobs
                         {
                             if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
                             {
-                                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
-                                string xml_f_name = entry.FullName;
-                                string xmlin = (extractPath + "/" + entry.FullName);
-                                _logger.LogInformation("xmlin parse: " + xmlin);
+                                    entry.ExtractToFile(Path.Combine(extractPath, entry.FullName));
+                                    string xml_f_name = entry.FullName;
+                                    string xmlin = (extractPath + "/" + entry.FullName);
+                                    _logger.LogInformation("xmlin parse: " + xmlin);
+                                    FileInfo infoCheck = new FileInfo(xmlin);
+                                    if (infoCheck.Length != 0)
+                                    {
 
-                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
-                                {
-                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
+                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                        {
+                                            XmlSerializer serializer = new XmlSerializer(typeof(export));
 
-                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
-                                    export exportd = xmlser.Deserialize(reader) as export;
+                                            XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                            export exportd = xmlser.Deserialize(reader) as export;
 
-                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                        exportNsiETPs NsiETPs = exportd.Items[0] as exportNsiETPs;
-                                        SaveNsiETP(NsiETPs.nsiETP);
+                                            //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                            exportNsiETPs NsiETPs = exportd.Items[0] as exportNsiETPs;
+                                            SaveNsiETP(NsiETPs.nsiETP);
 
-                                }
-
+                                        }
+                                    }
                             }
                         }
                         nsiFile.Status = Status.Processed;
-                        _dataServices.UpdateCasheFiles(nsiFile);
+                        _dataServices.UpdateNsiCasheFiles(nsiFile);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, ex.Message);
                         nsiFile.Status = Status.Data_Error;
-                        _dataServices.UpdateCasheFiles(nsiFile);
+                        _dataServices.UpdateNsiCasheFiles(nsiFile);
                     }
                 }
 
@@ -332,32 +343,35 @@ namespace DownLoaderZakupki.Core.Jobs
                                 string xml_f_name = entry.FullName;
                                 string xmlin = (extractPath + "/" + entry.FullName);
                                 _logger.LogInformation("xmlin parse: " + xmlin);
+                                    FileInfo infoCheck = new FileInfo(xmlin);
+                                    if (infoCheck.Length != 0)
+                                    {
+                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                        {
+                                            XmlSerializer serializer = new XmlSerializer(typeof(export));
 
-                                using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
-                                {
-                                    XmlSerializer serializer = new XmlSerializer(typeof(export));
+                                            XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                            export exportd = xmlser.Deserialize(reader) as export;
+                                            //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                            //nsiPlacingWayList
 
-                                    XmlSerializer xmlser = new XmlSerializer(typeof(export));
-                                    export exportd = xmlser.Deserialize(reader) as export;
-                                    //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                    //nsiPlacingWayList
-                                    
-                                        exportNsiPlacingWayList NsiPlacingWayList = exportd.Items[0] as exportNsiPlacingWayList;
-                                        SavePlacingWay(NsiPlacingWayList.nsiPlacingWay);
+                                            exportNsiPlacingWayList NsiPlacingWayList = exportd.Items[0] as exportNsiPlacingWayList;
+                                            SavePlacingWay(NsiPlacingWayList.nsiPlacingWay);
 
 
-                                }
+                                        }
+                                    }
 
                             }
                         }
                         nsiFile.Status = Status.Processed;
-                        _dataServices.UpdateCasheFiles(nsiFile);
+                        _dataServices.UpdateNsiCasheFiles(nsiFile);
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, ex.Message);
                         nsiFile.Status = Status.Data_Error;
-                        _dataServices.UpdateCasheFiles(nsiFile);
+                        _dataServices.UpdateNsiCasheFiles(nsiFile);
                     }
                 }
 
@@ -463,22 +477,28 @@ namespace DownLoaderZakupki.Core.Jobs
                                         string xml_f_name = entry.FullName;
                                         string xmlin = (extractPath + "/" + entry.FullName);
                                         _logger.LogInformation("xmlin parse: " + xmlin);
-                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+
+                                        FileInfo infoCheck = new FileInfo(xmlin);
+                                        if (infoCheck.Length != 0)
                                         {
-                                            XmlSerializer serializer = new XmlSerializer(typeof(export));
+                                            using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                            {
+                                                XmlSerializer serializer = new XmlSerializer(typeof(export));
 
-                                            XmlSerializer xmlser = new XmlSerializer(typeof(export));
-                                            export exportd = xmlser.Deserialize(reader) as export;
+                                                XmlSerializer xmlser = new XmlSerializer(typeof(export));
+                                                export exportd = xmlser.Deserialize(reader) as export;
 
-                                            exportNsiOrganizationList nsiOrganizationList = exportd.Items[0] as exportNsiOrganizationList;
-                                            ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
+                                                exportNsiOrganizationList nsiOrganizationList = exportd.Items[0] as exportNsiOrganizationList;
 
+                                                _logger.LogInformation($"Поступило в обработку {nsiOrganizationList.nsiOrganization.Length} организаций");
+                                                ParseNsiOrganizationList(nsiOrganizationList.nsiOrganization);
+
+                                            }
                                         }
-
                                     }
                                 }
                             nsiFile.Status = Status.Processed;
-                            _dataServices.UpdateCasheFiles(nsiFile);
+                            _dataServices.UpdateNsiCasheFiles(nsiFile);
                         }
                         catch (Exception ex)
                         {
@@ -552,8 +572,8 @@ namespace DownLoaderZakupki.Core.Jobs
                 }
 
             }
-
-            _dataServices.SaveNsiOrganizationList(nsiOrganizations);
+            _logger.LogInformation($"Обработано {nsiOrganizations.Count} организаций");
+            _dataServices.SaveNsiOrgList(nsiOrganizations);
         }
 
 

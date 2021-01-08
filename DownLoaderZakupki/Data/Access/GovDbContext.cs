@@ -18,27 +18,18 @@ namespace DownLoaderZakupki.Data.Access
             _loggerFactory = loggerFactory;
         }
 
-
-
-        public GovDbContext(DbContextOptions<GovDbContext> options): base(options)
-        {
-        }
-
         public GovDbContext()
         {
             //Для миграции   
-            //Database.EnsureDeleted();
-            //Database.EnsureCreated();
         }
-
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 #if true && DEBUG
             optionsBuilder.UseLoggerFactory(_loggerFactory);
 #endif
-            optionsBuilder.UseNpgsql(_connectionString);
-            //optionsBuilder.UseNpgsql("Host=192.168.1.60;Port=5432;Database=AimGov2;Username=postgres;Password=Zaq1Xsw2Z;Pooling=True");
+            //optionsBuilder.UseNpgsql(_connectionString);
+            optionsBuilder.UseNpgsql("Host=192.168.1.60;Port=5432;Database=AimGov2;Username=postgres;Password=Zaq1Xsw2Z;Pooling=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

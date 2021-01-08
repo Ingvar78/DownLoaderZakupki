@@ -11,8 +11,8 @@ namespace DownLoaderZakupki.Core.Interfaces
     public interface IDataServices
     {
         List<NsiFileCashes> GetNsiDBList(int lim, Status status, FLType fz_type, string basepath, string dirtype);
-        public void UpdateCasheFiles(NsiFileCashes fileCashes);
-        public void SaveNsiOrganizationList(List<NsiOrganizations> nsiOrganizations);
+        public void UpdateNsiCasheFiles(NsiFileCashes fileCashes);
+        public void SaveNsiOrgList(List<NsiOrganizations> nsiOrganizations);
 
     }
 }
