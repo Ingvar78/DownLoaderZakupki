@@ -24,11 +24,13 @@ namespace DownLoaderZakupki.Core.Jobs
         private readonly IGovDbManager _govDb;
         private readonly ILogger _logger;
         private readonly string _path;
+        private readonly IDataServices _dataServices;
         public UploadFilesJob(CommonSettings commonSettings,
             FZSettings44 fzSettings44,
             FZSettings223 fzSettings223,
             IGovDbManager govDb,
-            ILogger logger
+            ILogger logger,
+            IDataServices getDataServices
             )
         {
             _commonSettings = commonSettings;
@@ -37,6 +39,7 @@ namespace DownLoaderZakupki.Core.Jobs
             _govDb = govDb;
             _logger = logger;
             _path = commonSettings.BasePath;
+            _dataServices = getDataServices;
         }
 
         void IJob.Execute()
@@ -45,24 +48,11 @@ namespace DownLoaderZakupki.Core.Jobs
             DateTime StartDateTime = DateTime.Now;
             _logger.LogInformation($"Начало загрузки архивов: {StartDateTime.ToString()}: {_path}");
 
-            DownloadFtpFiles44(GetDBList(1000, Status.Exist, FLType.Fl44));
+            DownloadFtpFiles44(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl44));
 
-            Parallel.Invoke(
-                
-                // 1. получение списка файлов + сохранение списка для последующей загрузки
-                () => { GetListFTP44(); },
-                //2. загрузка 1000 файлов через получение списка файлов.
-                () => { DownloadFtpFiles44(GetDBList(1000, Status.Exist, FLType.Fl44)); },
-                ////ToDo
-                // 1. получение списка файлов + сохранение списка для последующей загрузки
-                () => { GetListFTP223(); },
-                //2. загрузка 1000 файлов через получение списка файлов.
-                () => { DownloadFtpFiles223(GetDBList(1000, Status.Exist, FLType.Fl223)); }
-                );
-
-
-            var cnt44 = GetDBList(1000, Status.Exist, FLType.Fl44).Count;
-            var cnt223 = GetDBList(1000, Status.Exist, FLType.Fl223).Count;
+            
+            var cnt44 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl44).Count;
+            var cnt223 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl223).Count;
 
             //Грузить пока не устанет
             while (cnt44 > 0 || cnt223 > 0)
@@ -70,13 +60,28 @@ namespace DownLoaderZakupki.Core.Jobs
                 //2. Загрузка файлов
                 //44ФЗ/223ФЗ
                 Parallel.Invoke(
-                    () => { DownloadFtpFiles44(GetDBList(1000, Status.Exist, FLType.Fl44)); },
-                    () => { DownloadFtpFiles223(GetDBList(1000, Status.Exist, FLType.Fl223)); }
+                    () => { DownloadFtpFiles44(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl44)); },
+                    () => { DownloadFtpFiles223(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl223)); }
                     );
 
-                cnt44 = GetDBList(1000, Status.Exist, FLType.Fl44).Count;
-                cnt223 = GetDBList(1000, Status.Exist, FLType.Fl223).Count;
+                cnt44 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl44).Count;
+                cnt223 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl223).Count;
             }
+
+            //Создание списка и загрузка первой 1000 файлов, при первом вызове.
+            Parallel.Invoke(
+
+                // 1. получение списка файлов + сохранение списка для последующей загрузки
+                () => { GetListFTP44(); },
+                //2. загрузка 1000 файлов через получение списка файлов.
+                () => { DownloadFtpFiles44(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl44)); },
+                ////ToDo
+                // 1. получение списка файлов + сохранение списка для последующей загрузки
+                () => { GetListFTP223(); },
+                //2. загрузка 1000 файлов через получение списка файлов.
+                () => { DownloadFtpFiles223(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl223)); }
+                );
+
         }
 
         private void GetListFTP44()
@@ -253,11 +258,11 @@ namespace DownLoaderZakupki.Core.Jobs
                     client.DownloadFile(_fzSettings44.WorkPath + item.Full_path, item.Full_path);
                     item.Modifid_date = DateTime.Now;
                     item.Status = Status.Uploaded;
-                    UpdateCasheFiles(item);
+                    _dataServices.UpdateCasheFiles(item);
                 }
                 catch (Exception ex)
                 {
-                    DeleteDBfile(item);
+                    _dataServices.DeleteCasheFiles(item);
                     _logger.LogError(ex, $"Ошибка скачивания архива FZ44 файл перемещён или недоступен: {item.Full_path}");
                     _logger.LogError(ex, ex.Message);
                 }
@@ -299,11 +304,11 @@ namespace DownLoaderZakupki.Core.Jobs
                     client.DownloadFile(_fzSettings223.WorkPath + item.Full_path, item.Full_path);
                     item.Modifid_date = DateTime.Now;
                     item.Status = Status.Uploaded;
-                    UpdateCasheFiles(item);
+                    _dataServices.UpdateCasheFiles(item);
                 }
                 catch (Exception ex)
                 {
-                    DeleteDBfile(item);
+                    _dataServices.DeleteCasheFiles(item);
                     _logger.LogError(ex, $"Ошибка скачивания архива FZ223 файл перемещён или недоступен: {item.Full_path}");
                     _logger.LogError(ex, ex.Message);
                 }
@@ -323,7 +328,7 @@ namespace DownLoaderZakupki.Core.Jobs
             foreach (FtpListItem item in ListFile)
             {
 
-                if (!GetDBfile(item.FullName))
+                if (!_dataServices.CheckCasheFiles(item.FullName))
                 {
                     var filesave = new FileCashes();
                     filesave.Date = item.Modified;
@@ -358,57 +363,6 @@ namespace DownLoaderZakupki.Core.Jobs
             }
 
 
-        }
-
-        bool GetDBfile(string FullPath)
-        {
-            FileCashes find = null;
-
-            using (var db = _govDb.GetContext())
-            {
-                find = db.FileCashes
-                    .AsNoTracking()
-                    .Where(x => x.Full_path == FullPath)
-                    .OrderByDescending(x => x.Date)
-                    .FirstOrDefault();
-            }
-            if (find == null) return false;
-            else return true;
-        }
-
-
-        List<FileCashes> GetDBList(int lim, Status status, FLType fz_type)
-        {
-            List<FileCashes> data = new List<FileCashes>();
-
-            using (var db = _govDb.GetContext())
-            {
-                data = db.FileCashes
-                    .AsNoTracking()
-                    .Where(x => x.Status == status && x.Fz_type == fz_type)
-                    .OrderByDescending(x => x.Date)
-                    .Take(lim)
-                    .ToList();
-            }
-            return data;
-        }
-
-
-        private void UpdateCasheFiles(FileCashes fileCashes)
-        {
-            using (var db = _govDb.GetContext())
-            {
-                db.FileCashes.Update(fileCashes);
-                db.SaveChanges();
-            }
-        }
-        private void DeleteDBfile(FileCashes fileCashes)
-        {
-            using (var db = _govDb.GetContext())
-            {
-                db.FileCashes.Remove(fileCashes);
-                db.SaveChanges();
-            }
         }
 
     }

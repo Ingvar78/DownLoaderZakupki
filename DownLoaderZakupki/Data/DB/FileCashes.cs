@@ -25,7 +25,7 @@ namespace DownLoaderZakupki.Data.DB
         [Column(TypeName = "varchar(64)")]
         public string Dirtype { get; set; }
         /// <summary>
-        /// Дата последнего изменения файла
+        /// Дата последнего изменения файла на FTP
         /// </summary>
         public DateTime Date { get; set; }
 
@@ -33,6 +33,9 @@ namespace DownLoaderZakupki.Data.DB
         public long Size { get; set; }
         public Status Status { get; set; }
         public FLType Fz_type { get; set; }
+        /// <summary>
+        /// Дата последнего изменения локального файла при обработке
+        /// </summary>
         public DateTime Modifid_date { get; set; }
     }
 
@@ -62,6 +65,10 @@ namespace DownLoaderZakupki.Data.DB
         public long Size { get; set; }
         public Status Status { get; set; }
         public FLType Fz_type { get; set; }
+        
+        /// <summary>
+        /// Дата последнего изменения локального файла при обработке
+        /// </summary>
         public DateTime Modifid_date { get; set; }
     }
 }

@@ -118,9 +118,78 @@ namespace DownLoaderZakupki.Core.Services
 
         #endregion NSI File Cash
 
-        #region 1
-        
-        #endregion 1
+        #region Data File Cash
+        /// <summary>
+        /// Получение списка файлов на загрузку
+        /// </summary>
+        /// <param name="lim"></param>
+        /// <param name="status"></param>
+        /// <param name="fz_type"></param>
+        /// <returns></returns>
+        public List<FileCashes> GetDwList(int lim, Status status, FLType fz_type)
+        {
+            List<FileCashes> data = new List<FileCashes>();
+
+            using (var db = _govDb.GetContext())
+            {
+                data = db.FileCashes
+                    .AsNoTracking()
+                    .Where(x => x.Status == status && x.Fz_type == fz_type)
+                    .OrderByDescending(x => x.Date)
+                    .Take(lim)
+                    .ToList();
+            }
+            return data;
+        }
+
+        /// <summary>
+        /// Проверка на наличие имеющейся записи о файле
+        /// </summary>
+        /// <param name="FullPath"></param>
+        /// <returns></returns>
+        public bool CheckCasheFiles(string FullPath)
+        {
+            FileCashes find = null;
+
+            using (var db = _govDb.GetContext())
+            {
+                find = db.FileCashes
+                    .AsNoTracking()
+                    .Where(x => x.Full_path == FullPath)
+                    .OrderByDescending(x => x.Date)
+                    .FirstOrDefault();
+            }
+            if (find == null) return false;
+            else return true;
+        }
+
+        /// <summary>
+        /// Обновление данных по загрузке в кэше
+        /// </summary>
+        /// <param name="fileCashes"></param>
+        public void UpdateCasheFiles(FileCashes fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.FileCashes.Update(fileCashes);
+                db.SaveChanges();
+            }
+        }
+
+        /// <summary>
+        /// Удаление из кэша несуществующего/недоступного на ftp файла 
+        /// </summary>
+        /// <param name="fileCashes"></param>
+        public void DeleteCasheFiles(FileCashes fileCashes)
+        {
+            using (var db = _govDb.GetContext())
+            {
+                db.FileCashes.Remove(fileCashes);
+                db.SaveChanges();
+            }
+        }
+
+        #endregion Data File Cash
 
     }
 }

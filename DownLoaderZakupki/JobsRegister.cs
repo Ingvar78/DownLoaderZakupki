@@ -38,11 +38,16 @@ namespace DownLoaderZakupki
                 Directory.CreateDirectory(fzSettings223.Value.WorkPath);
             }
             
-            //Загрузка архивов ФЗ 44 и 223 - данные аукционов, контрактов...справочников
+            //Загрузка архивов ФЗ 44 и 223 - данные аукционов, контрактов...справочников - всё что может понадобиться.
             if (partUsed.UseUpload)
             {
                 // данные аукционов, контрактов
-                Schedule(() => new UploadFilesJob(commonSettings.Value, fzSettings44.Value, fzSettings223.Value, govDb, logger))
+                Schedule(() => new UploadFilesJob(commonSettings.Value, 
+                    fzSettings44.Value, 
+                    fzSettings223.Value, 
+                    govDb, 
+                    logger,
+                    dataServices))
                     .NonReentrant()
                     .ToRunNow()
                     .AndEvery(4).Hours();
@@ -56,7 +61,8 @@ namespace DownLoaderZakupki
                     .ToRunNow()
                     .AndEvery(24).Hours();
             }
-
+            
+            // Обработка справочников ФЗ-44
             if (partUsed.UseNsiSettings44)
             {
                 Schedule(() => new ParseNsi44FilesJob(commonSettings.Value,
@@ -66,7 +72,7 @@ namespace DownLoaderZakupki
                         .NonReentrant()
                         .ToRunNow();
             }
-
+            //Обработка справочников ФЗ-223
             if (partUsed.UseNsiSettings223)
             {
                 Schedule(() => new ParseNsi223FilesJob(commonSettings.Value,
@@ -77,6 +83,15 @@ namespace DownLoaderZakupki
                         .ToRunNow();
             }
 
+            if (partUsed.UseFz44Settings)
+            {
+                Schedule(() => new Parse44FilesJob(commonSettings.Value,
+                            fzSettings44.Value,
+                            govDb, logger,
+                            dataServices))
+                            .NonReentrant()
+                            .ToRunNow();
+            }
             _logger.LogInformation("End Init Job");
         }
 
