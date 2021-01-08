@@ -40,3 +40,5 @@ dotnet DownLoaderZakupki.dll или запуск исполняемого фай
 ### Установка .Net Core на Linux 
 - Ubuntu https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-ubuntu-1910
 - Centos 7 https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-centos7
+
+ecuador splashdown

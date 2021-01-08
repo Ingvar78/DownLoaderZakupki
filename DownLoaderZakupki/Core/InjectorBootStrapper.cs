@@ -1,4 +1,5 @@
 ﻿using DownLoaderZakupki.Core.Interfaces;
+using DownLoaderZakupki.Core.Services;
 using DownLoaderZakupki.Data.Managers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -11,13 +12,12 @@ namespace DownLoaderZakupki.Core
     {
             public static void RegisterServices(IServiceCollection services)
             {
-                //Доступ к БД приложения
-                services.AddTransient<IGovDbManager, GovDbManager>();
-                //
-                services.AddTransient<JobsRegister>();
+            
+            services.AddTransient<IGovDbManager, GovDbManager>();
+            services.AddTransient<IDataServices, DataServices>();
+            services.AddTransient<JobsRegister>();
+        }
 
-            }
-        
 
     }
 }

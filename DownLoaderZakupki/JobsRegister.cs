@@ -23,7 +23,8 @@ namespace DownLoaderZakupki
             IOptions<FZSettings223> fzSettings223,
             IOptions<NsiSettings44> nsiSettings44,
             IOptions<NsiSettings223> nsiSettings223,
-            ILogger<JobsRegister> logger
+            ILogger<JobsRegister> logger,
+            IDataServices dataServices
             )
         {
             _logger = logger;
@@ -60,7 +61,18 @@ namespace DownLoaderZakupki
             {
                 Schedule(() => new ParseNsi44FilesJob(commonSettings.Value,
                         nsiSettings44.Value,
-                        govDb, logger))
+                        govDb, logger, 
+                        dataServices))
+                        .NonReentrant()
+                        .ToRunNow();
+            }
+
+            if (partUsed.UseNsiSettings223)
+            {
+                Schedule(() => new ParseNsi223FilesJob(commonSettings.Value,
+                        nsiSettings223.Value,
+                        govDb, logger,
+                        dataServices))
                         .NonReentrant()
                         .ToRunNow();
             }

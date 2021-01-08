@@ -18,14 +18,9 @@ namespace DownLoaderZakupki.Data.DB
         /// <summary>
         /// Код по СПЗ
         /// </summary>
-        [Column(TypeName = "varchar(12)")]
+        [Column(TypeName = "varchar(20)")]
         public string RegNumber { get; set; }
 
-        /// <summary>
-        /// Краткое наименование 
-        /// </summary>
-        [Column(TypeName = "varchar(1024)")]
-        public string ShortName { get; set; }
         /// <summary>
         /// Полное наименование 
         /// </summary>
@@ -39,6 +34,9 @@ namespace DownLoaderZakupki.Data.DB
 
         public string NsiData { get; set; }
 
+        /// <summary>
+        /// Данные счетов 
+        /// </summary>
         [Column(TypeName = "jsonb")]
         public string Accounts { get; set; }
         /// <summary>
@@ -65,60 +63,9 @@ namespace DownLoaderZakupki.Data.DB
         public string Ogrn { get; set; }
 
         /// <summary>
-        /// ОКОПФ заказчика
-        /// </summary>
-        [Column(TypeName = "varchar(20)")]
-        public string Okopf { get; set; }
-
-        /// <summary>
-        /// ОКПО заказчика
-        /// </summary>
-        [Column(TypeName = "varchar(20)")]
-        public string Okpo { get; set; }
-
-        /// <summary>
-        /// ОКВЕД заказчика
-        /// </summary>
-        [Column(TypeName = "varchar(20)")]
-        public string Okved { get; set; }
-
-        /// <summary>
-        /// ОКТМО заказчика
-        /// </summary>
-        [Column(TypeName = "varchar(20)")]
-        public string Oktmo { get; set; }
-        /// <summary>
         /// Актуальность записи
         /// </summary>
         public bool IsActual { get; set; }
-
-        [Column(TypeName = "varchar(256)")]
-        public string Email { get; set; }
-
-        [Column(TypeName = "varchar(30)")]
-        public string Phone { get; set; }
-        [Column(TypeName = "varchar(30)")]
-        public string Fax { get; set; }
-        [Column(TypeName = "varchar(1024)")]
-        public string Url { get; set; }
-
-        public int TimeZone { get; set; }
-        /// <summary>
-        /// Контактное лицо
-        /// </summary>
-        [Column(TypeName = "jsonb")]
-        public string ContactPerson { get; set; }
-        /// <summary>
-        /// Фактический адрес
-        /// </summary>
-        [Column(TypeName = "jsonb")]
-        public string FactualAddress { get; set; }
-
-        /// <summary>
-        /// Почтовый адрес
-        /// </summary>
-        [Column(TypeName = "varchar(1024)")]
-        public string PostalAddress { get; set; }
 
         /// <summary>
         /// Тип источника данных для разбора отличий по ФЗ-44 и ФЗ-223
