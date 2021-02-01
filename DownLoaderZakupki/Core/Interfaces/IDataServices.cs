@@ -38,5 +38,17 @@ namespace DownLoaderZakupki.Core.Interfaces
         /// </summary>
         /// <param name="fileCashes"></param>
         void DeleteCasheFiles(FileCashes fileCashes);
+
+        /// <summary>
+        /// Получение списка файлов из кэша по извещениям и протоколам.
+        /// </summary>
+        /// <param name="lim"></param>
+        /// <param name="status"></param>
+        /// <param name="fz_type"></param>
+        /// <param name="basepath"></param>
+        /// <param name="dirtype"></param>
+        /// <returns></returns>
+        List<FileCashes> GetFileCashesList(int lim, Status status, FLType fz_type, string basepath, string dirtype);
+
     }
 }

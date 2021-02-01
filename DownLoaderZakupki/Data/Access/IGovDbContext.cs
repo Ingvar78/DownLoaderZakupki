@@ -39,6 +39,11 @@ namespace DownLoaderZakupki.Data.Access
         /// </summary>
         DbSet<NsiOrganizations> NsiOrganizations { get; set; }
 
+        /// <summary>
+        /// Все типы извещений по аукционам 44 ФЗ
+        /// </summary>
+        DbSet<Notifications> Notifications { get; set; }
+
         int SaveChanges();
     }
 }

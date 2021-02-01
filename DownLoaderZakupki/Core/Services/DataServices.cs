@@ -189,6 +189,37 @@ namespace DownLoaderZakupki.Core.Services
             }
         }
 
+        /// <summary>
+        /// Получение списка файлов из кэша по извещениям и протоколам.
+        /// </summary>
+        /// <param name="lim"></param>
+        /// <param name="status"></param>
+        /// <param name="fz_type"></param>
+        /// <param name="basepath"></param>
+        /// <param name="dirtype"></param>
+        /// <returns></returns>
+        public List<FileCashes> GetFileCashesList(int lim, Status status, FLType fz_type, string basepath, string dirtype)
+        {
+            //throw new NotImplementedException();
+
+            List<FileCashes> data = new List<FileCashes>();
+
+            using (var db = _govDb.GetContext())
+            {
+                data = db.FileCashes
+                    .AsNoTracking()
+                    .Where(x => x.Status == status
+                    && x.Fz_type == fz_type
+                    && x.BaseDir == basepath
+                    && x.Dirtype == dirtype)
+                    .OrderBy(x => x.Date)
+                    //.OrderByDescending(x => x.Date)
+                    .Take(lim)
+                    .ToList();
+            }
+            return data;
+
+        }
         #endregion Data File Cash
 
     }

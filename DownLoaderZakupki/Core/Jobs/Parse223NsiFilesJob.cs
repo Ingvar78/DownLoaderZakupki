@@ -18,7 +18,7 @@ using System.Xml.Serialization;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
-    internal class ParseNsi223FilesJob: IJob
+    internal class Parse223NsiFilesJob: IJob
     {
         private readonly CommonSettings _commonSettings;
         private readonly NsiSettings223 _nsiSettings223;
@@ -26,7 +26,7 @@ namespace DownLoaderZakupki.Core.Jobs
         private readonly IGovDbManager _govDb;
         private readonly string _path;
         private readonly IDataServices _dataServices;
-        public ParseNsi223FilesJob(CommonSettings commonSettings,
+        public Parse223NsiFilesJob(CommonSettings commonSettings,
             NsiSettings223 nsiSettings223,
             IGovDbManager govDb,
             ILogger logger,

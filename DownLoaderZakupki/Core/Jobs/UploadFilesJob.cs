@@ -48,20 +48,20 @@ namespace DownLoaderZakupki.Core.Jobs
             DateTime StartDateTime = DateTime.Now;
             _logger.LogInformation($"Начало загрузки архивов: {StartDateTime.ToString()}: {_path}");
 
-            DownloadFtpFiles44(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl44));
+            //DownloadFtpFiles44(_dataServices.GetDwList(100, Status.Exist, FLType.Fl44));
 
             
-            var cnt44 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl44).Count;
-            var cnt223 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl223).Count;
-
+            var cnt44 = _dataServices.GetDwList(100, Status.Exist, FLType.Fl44).Count;
+            var cnt223 = _dataServices.GetDwList(100, Status.Exist, FLType.Fl223).Count;
+            
             //Грузить пока не устанет
             while (cnt44 > 0 || cnt223 > 0)
             {
                 //2. Загрузка файлов
                 //44ФЗ/223ФЗ
                 Parallel.Invoke(
-                    () => { DownloadFtpFiles44(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl44)); },
-                    () => { DownloadFtpFiles223(_dataServices.GetDwList(1000, Status.Exist, FLType.Fl223)); }
+                    () => { DownloadFtpFiles44(_dataServices.GetDwList(100, Status.Exist, FLType.Fl44)); },
+                    () => { DownloadFtpFiles223(_dataServices.GetDwList(500, Status.Exist, FLType.Fl223)); }
                     );
 
                 cnt44 = _dataServices.GetDwList(1000, Status.Exist, FLType.Fl44).Count;
@@ -234,6 +234,7 @@ namespace DownLoaderZakupki.Core.Jobs
         {
             DateTime StartDate = DateTime.Now;
             _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ44 {StartDate}...");
+            _logger.LogDebug($"Начало загрузки {fileCashes.Count} архивов FZ44 {StartDate}...");
 
             var parallelOptions = new ParallelOptions()
             {
@@ -274,13 +275,14 @@ namespace DownLoaderZakupki.Core.Jobs
 
             DateTime EndDate = DateTime.Now;
             _logger.LogInformation($"Загружено {fileCashes.Count} архивов FZ44 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
-
+            _logger.LogDebug($"Загружено  {fileCashes.Count} архивов FZ44 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
         }
 
         private void DownloadFtpFiles223(List<FileCashes> fileCashes)
         {
             DateTime StartDate = DateTime.Now;
             _logger.LogInformation($"Начало загрузки {fileCashes.Count} архивов FZ223 {StartDate}...");
+            _logger.LogDebug($"Начало загрузки {fileCashes.Count} архивов FZ223 {StartDate}...");
 
             var parallelOptions = new ParallelOptions()
             {
@@ -320,6 +322,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
             DateTime EndDate = DateTime.Now;
             _logger.LogInformation($"Загружено {fileCashes.Count} архивов FZ223 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
+            _logger.LogDebug($"Загружено {fileCashes.Count} архивов FZ223 {EndDate}... Время загрузки {(EndDate - StartDate).TotalMinutes} минут");
 
         }
 

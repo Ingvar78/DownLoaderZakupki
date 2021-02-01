@@ -37,6 +37,17 @@ namespace DownLoaderZakupki
                 Directory.CreateDirectory(fzSettings44.Value.WorkPath);
                 Directory.CreateDirectory(fzSettings223.Value.WorkPath);
             }
+            else
+            {
+                if (!Directory.Exists(fzSettings44.Value.WorkPath))
+                {
+                    Directory.CreateDirectory(fzSettings44.Value.WorkPath);
+                }
+                if (!Directory.Exists(fzSettings223.Value.WorkPath))
+                {
+                    Directory.CreateDirectory(fzSettings223.Value.WorkPath);
+                }
+            }
             
             //Загрузка архивов ФЗ 44 и 223 - данные аукционов, контрактов...справочников - всё что может понадобиться.
             if (partUsed.UseUpload)
@@ -65,7 +76,7 @@ namespace DownLoaderZakupki
             // Обработка справочников ФЗ-44
             if (partUsed.UseNsiSettings44)
             {
-                Schedule(() => new ParseNsi44FilesJob(commonSettings.Value,
+                Schedule(() => new Parse44NsiFilesJob(commonSettings.Value,
                         nsiSettings44.Value,
                         govDb, logger, 
                         dataServices))
@@ -75,7 +86,7 @@ namespace DownLoaderZakupki
             //Обработка справочников ФЗ-223
             if (partUsed.UseNsiSettings223)
             {
-                Schedule(() => new ParseNsi223FilesJob(commonSettings.Value,
+                Schedule(() => new Parse223NsiFilesJob(commonSettings.Value,
                         nsiSettings223.Value,
                         govDb, logger,
                         dataServices))
