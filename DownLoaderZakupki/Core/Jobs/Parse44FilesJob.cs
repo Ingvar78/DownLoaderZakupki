@@ -130,35 +130,8 @@ namespace DownLoaderZakupki.Core.Jobs
                                 FileInfo infoCheck = new FileInfo(xmlin);
                                 if (infoCheck.Length != 0)
                                 {
-                                    XmlDocument xml = new XmlDocument();
                                     try
-                                    { xml.Load(xmlin); }
-                                    catch (Exception ex)
-                                    {
-                                        _logger.LogError(ex, ex.Message + xmlin);
-                                    }
-
-                                    XmlNode node = xml.DocumentElement;
-
-                                    var exportNode_xml = node.ChildNodes[0];
-                                    string xmlnodename = exportNode_xml.LocalName;
-
-                                    var tttt = exportNode_xml.Attributes[0].InnerText;
-
-                                    var valuesAsArray = Enum.GetValues(typeof(schemeVersionType));
-                                    var valuesAsName = Enum.GetNames(typeof(schemeVersionType));
-                                    //var zzz = Enum.Parse(typeof(schemeVersionType), tttt);
-
-                                    var ett = Enum.IsDefined(typeof(schemeVersionType), exportNode_xml.SchemaInfo);
-
-                                    if (ett)
-                                    {
-                                        Console.WriteLine("Пщщв");
-                                    }
-                                    
-
-                                    var json1 = JsonConvert.SerializeObject(exportNode_xml);
-
+                                    { 
                                     using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                     {
                                         XmlSerializer serializer = new XmlSerializer(typeof(export));
@@ -166,30 +139,143 @@ namespace DownLoaderZakupki.Core.Jobs
                                         XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                         export exportd = xmlser.Deserialize(reader) as export;
                                         Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                        try
+                                            //Console.WriteLine();
+
+                                            //string errfile = (_commonSettings.DebugPath + nFile.Full_path);
+                                            //if (!Directory.Exists(errfile)) Directory.CreateDirectory(errfile);
+
+                                            //System.IO.File.Copy(xmlin, _commonSettings.DebugPath + nFile.Full_path +'/'+ entry.FullName, true);
+                                            switch (exportd.ItemsElementName[0].ToString())
                                         {
-                                            exportNsiAbandonedReasonList exportNsiAbandoned = exportd.Items[0] as exportNsiAbandonedReasonList;
 
-#if true && DEBUG
-                                            var json = JsonConvert.SerializeObject(exportNsiAbandoned.nsiAbandonedReason);
-#endif
-                                            //SaveAbandonedReason(exportNsiAbandoned.nsiAbandonedReason);
+                                            case "fcsNotificationEP":
+                                                {
+                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
 
-                                            nFile.Status = Status.Processed;
-                                            // Обновляем статус обработанного файла.
-                                            //???? _dataServices.UpdateCasheFiles(nFile);
+                                                    string exp_json = JsonConvert.SerializeObject(exportd);
+                                                    //var EData = JsonConvert.DeserializeObject<export>(exp_json);
 
+                                                    zfcs_notificationEPType fcsNotificationEP = exportd.Items[0] as zfcs_notificationEPType;
+                                                    string unf_json = JsonConvert.SerializeObject(fcsNotificationEP);
+
+                                                    try
+                                                    {
+                                                        var AData = JsonConvert.DeserializeObject<notificationEOKOUType>(unf_json);
+                                                    }
+                                                    catch (Exception ex)
+                                                    {
+                                                        Console.WriteLine(ex);
+                                                    }
+                                                    var pnum = fcsNotificationEP.purchaseNumber;
+                                                    var etype = exportd.Items[0].GetType().Name;
+                                                    var pdate = fcsNotificationEP.docPublishDate;
+                                                    //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                                    break;
+                                                }
+                                            case "fcsClarification":
+                                                {
+                                                    string exp_json = JsonConvert.SerializeObject(exportd);
+                                                    var EData = JsonConvert.DeserializeObject<export>(exp_json);
+                                                    zfcs_clarificationType fcsClarification = exportd.Items[0] as zfcs_clarificationType;
+                                                    string unf_json = JsonConvert.SerializeObject(fcsClarification);
+                                                    var pnum = fcsClarification.purchaseNumber;
+                                                    var etype = exportd.Items[0].GetType().Name;
+                                                    var pdate = fcsClarification.docPublishDate;
+                                                    //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+
+                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                                    break;
+                                                }
+                                            case "fcsNotificationEF":
+                                                {
+                                                    string exp_json = JsonConvert.SerializeObject(exportd);
+                                                    zfcs_notificationEFType fcsNotificationEF = exportd.Items[0] as zfcs_notificationEFType;
+                                                    string unf_json = JsonConvert.SerializeObject(fcsNotificationEF);
+                                                    var pnum = fcsNotificationEF.purchaseNumber;
+                                                    var etype = exportd.Items[0].GetType().Name;
+                                                    var pdate = fcsNotificationEF.docPublishDate;
+                                                    //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+
+                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                                    break;
+                                                }
+
+                                            case "contractProcedure":
+                                                {
+                                                    string exp_json = JsonConvert.SerializeObject(exportd);
+                                                    zfcs_contractProcedure2015Type contractProcedure = exportd.Items[0] as zfcs_contractProcedure2015Type;
+
+                                                    string unf_json = JsonConvert.SerializeObject(contractProcedure);
+                                                    var cnum = contractProcedure.regNum;
+                                                    var etype = exportd.Items[0].GetType().Name;
+                                                    var pdate = contractProcedure.publishDate;
+                                                    //contractProcedure(_connectionDB.ConnectionDB1, cnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                                    break;
+                                                }
+                                            case "contract":
+                                                {
+                                                    string exp_json = JsonConvert.SerializeObject(exportd);
+                                                    zfcs_contract2015Type contract = exportd.Items[0] as zfcs_contract2015Type;
+
+                                                    string unf_json = JsonConvert.SerializeObject(contract);
+                                                    var cnum = contract.regNum;
+                                                    var etype = exportd.Items[0].GetType().Name;
+                                                    var pdate = contract.publishDate;
+                                                    //contractProcedure(cnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                                    break;
+                                                }
+
+                                            default:
+                                                {
+
+                                                    if (exportd.Items.Length > 1)
+                                                    {
+                                                        Console.WriteLine("More one");
+                                                        _logger.LogWarning($"More then one Items in file: {infoCheck.FullName} ");
+                                                    }
+                                                    string exp_json = JsonConvert.SerializeObject(exportd);
+                                                    var EData = JsonConvert.DeserializeObject<export>(exp_json);
+                                                    string eltype = $"{exportd.ItemsElementName[0].ToString()};{exportd.Items[0].GetType().Name}";
+                                                    string fnel = $"{exportd.Items[0].GetType().Name}";
+
+                                                    using (StreamWriter sw1 = new StreamWriter(@$"D:\\FZ\\Types44\\{fnel}", true, System.Text.Encoding.Default))
+                                                    {
+
+                                                        sw1.WriteLine(eltype);
+
+                                                    };
+
+
+                                                    break;
+                                                }
                                         }
-                                        catch (Exception ex)
-                                        {
-                                            _logger.LogError(ex, ex.Message);
-                                        }
+
+                                   
+                                        //#if true && DEBUG
+                                        //                                            var json = JsonConvert.SerializeObject(exportd.item);
+                                        //#endif
+                                    }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError(ex, "Error parse");
+                                        _logger.LogError(ex, ex.Message);
+                                        string errfile = (_commonSettings.DebugPath + nFile.Full_path);
+                                        if (!Directory.Exists(errfile)) Directory.CreateDirectory(errfile);
+                                        System.IO.File.Copy(xmlin, _commonSettings.DebugPath + nFile.Full_path + '/' + entry.FullName, true);
+                                        
 
                                     }
                                 }
                             }
                         }
                 }
+
+                nFile.Status = Status.Processed;
+                _dataServices.UpdateCasheFiles(nFile);
 
                 Directory.Delete(extractPath, true);
             }

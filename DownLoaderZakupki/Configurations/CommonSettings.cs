@@ -11,6 +11,11 @@ namespace DownLoaderZakupki.Configurations
         /// </summary>
         public string BasePath { get; set; }
         /// <summary>
+        /// Директория для ошибок и необработанных файлов.
+        /// </summary>
+        public string DebugPath { get; set; }
+
+        /// <summary>
         /// Срок зранения архивов в днях для экономии места
         /// </summary>
         public int KeepDay { get; set; }
