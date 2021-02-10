@@ -220,6 +220,56 @@ namespace DownLoaderZakupki.Core.Services
             return data;
 
         }
+
+
+        /// <summary>
+        /// Сохранение данных организации из справочника.
+        /// </summary>
+        /// <param name="nsiOrganizations"></param>
+        public void SaveNotification(List<Notifications> notifications)
+        {
+
+            foreach (var notif in notifications)
+            {
+                using (var db = _govDb.GetContext())
+                {
+                    try
+                    {
+                        var find = db.Notifications
+                        .AsNoTracking()
+                        .Where(x => x.Purchase_num == notif.Purchase_num
+                        && x.Fz_type == notif.Fz_type
+                        && x.PublishDate == notif.PublishDate
+                        && x.Hash ==notif.Hash)
+                        .SingleOrDefault();
+
+                        if (find == null)
+                        {
+                            db.Notifications.Add(notif);
+                            db.SaveChanges();
+                        }
+                        //else
+                        //{
+                        //    find.R_body = notif.R_body;
+                        //    find.ContractConclusion = notif.ContractConclusion;
+                        //    find.Wname = notif.Wname;
+                        //    find.Inn = notif.Inn ?? string.Empty;
+                        //    find.Zip_file = notif.Zip_file;
+                        //    find.File_name = notif.File_name;
+                        //    db.Notifications.Update(find);
+                        //    db.SaveChanges();
+                        //}
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+                }
+            }
+        }
+
+
         #endregion Data File Cash
 
     }

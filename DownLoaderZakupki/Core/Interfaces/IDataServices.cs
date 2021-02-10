@@ -50,5 +50,10 @@ namespace DownLoaderZakupki.Core.Interfaces
         /// <returns></returns>
         List<FileCashes> GetFileCashesList(int lim, Status status, FLType fz_type, string basepath, string dirtype);
 
+        /// <summary>
+        /// Сохранение данных извещений;
+        /// </summary>
+        /// <param name="notifications"></param>
+        void SaveNotification(List<Notifications> notifications);
     }
 }

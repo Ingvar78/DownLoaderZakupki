@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
@@ -54,37 +55,41 @@ namespace DownLoaderZakupki.Core.Jobs
                     {
                         case "notifications":
                             {
-                                //var tt1 = _dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                ParseNnotifications(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                while (check.Count > 0)
+                                {
+                                    ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                }
                             }
                             break;
                         case "contracts":
                             {
-                                var tt2 = _dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                var tt2 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 //ParseContracts(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "protocols":
                             {
-                                var tt3 = _dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                var tt3 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 //ParseProtocols(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "contractprojects":
                             {
-                                var tt4 = _dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                var tt4 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 //ParseContractProjects(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "notificationExceptions":
                             {
-                                var tt5 = _dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                var tt5 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 //ParseNotificationExceptions(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
 
                         default:
-                            var tt = _dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir);
+                            var tt = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                             _logger.LogWarning($"Ошибка обработки файла из списка DirsDocs: {dir}, проверьте параметры ФЗ-44, не обработано {tt.Count} файлов");
                             break;
                     }
@@ -102,11 +107,13 @@ namespace DownLoaderZakupki.Core.Jobs
         void ParseNnotifications(List<FileCashes> FileCashes)
         {
             //Обрабатываем данный тип;
+            
 
             foreach (var nFile in FileCashes)
             {
                 string zipPath = (_fzSettings44.WorkPath + nFile.Full_path);
                 string extractPath = (_fzSettings44.WorkPath + "/extract" + nFile.Full_path);
+                var notifications = new List<Notifications>();
 
                 if (Directory.Exists(extractPath))
                 {
@@ -131,104 +138,663 @@ namespace DownLoaderZakupki.Core.Jobs
                                 if (infoCheck.Length != 0)
                                 {
                                     try
-                                    { 
-                                    using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                    {
+                                        string read_xml_text;
+                                        using (var streamReader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                        {
+                                            read_xml_text = streamReader.ReadToEnd();
+                                        }
+
+                                        var strBuilder = new StringBuilder();
+                                        using (var hash = SHA256.Create())
+                                        {
+                                            //Getting hashed byte array
+                                            var result = hash.ComputeHash(Encoding.UTF8.GetBytes(read_xml_text));
+                                            foreach (var b in result)
+                                                strBuilder.Append(b.ToString("x2")); //Byte as hexadecimal format
+                                        }
+
+                                        var hashstr = strBuilder.ToString();
+
+                                        Console.WriteLine($"{hashstr}");
+
+                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                     {
                                         XmlSerializer serializer = new XmlSerializer(typeof(export));
 
                                         XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                         export exportd = xmlser.Deserialize(reader) as export;
                                         Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                            //Console.WriteLine();
 
-                                            //string errfile = (_commonSettings.DebugPath + nFile.Full_path);
-                                            //if (!Directory.Exists(errfile)) Directory.CreateDirectory(errfile);
 
-                                            //System.IO.File.Copy(xmlin, _commonSettings.DebugPath + nFile.Full_path +'/'+ entry.FullName, true);
+                                            var settings = new JsonSerializerSettings()
+                                            {
+                                                Formatting = Newtonsoft.Json.Formatting.Indented,
+                                                TypeNameHandling = TypeNameHandling.Auto
+                                            };
+
                                             switch (exportd.ItemsElementName[0].ToString())
                                         {
 
-                                            case "fcsNotificationEP":
+                                            case "fcsNotificationEP100550":
                                                 {
-                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                                        //purchase_num, protocol_num, inn, wname, participant_info, app_rating, contract_conclusion, journal_number, w_price, r_body, type_notif, zip_file, file_name, fz_type, protocol_date, publish_date
+                                                        string exp_json = JsonConvert.SerializeObject(exportd);
+                                                        zfcs_notificationEPType fcsNotificationEP = exportd.Items[0] as zfcs_notificationEPType;
 
-                                                    string exp_json = JsonConvert.SerializeObject(exportd);
-                                                    //var EData = JsonConvert.DeserializeObject<export>(exp_json);
 
-                                                    zfcs_notificationEPType fcsNotificationEP = exportd.Items[0] as zfcs_notificationEPType;
-                                                    string unf_json = JsonConvert.SerializeObject(fcsNotificationEP);
+                                                        //string unf_json = JsonConvert.SerializeObject(fcsNotificationEP, settings);
+                                                        string unf_json = JsonConvert.SerializeObject(fcsNotificationEP);
+                                                        var fscn = new Notifications();
 
-                                                    try
+                                                        fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = fcsNotificationEP.purchaseNumber;
+                                                        fscn.PublishDate = fcsNotificationEP.docPublishDate;
+                                                        fscn.Type_notif= exportd.Items[0].GetType().Name;
+                                                        //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                    break;
+                                                }
+                                                
+                                                case "epClarificationDoc": //epClarificationDoc; clarificationDocType - Разъяснение положений документации;
                                                     {
-                                                        var AData = JsonConvert.DeserializeObject<notificationEOKOUType>(unf_json);
+                                                        clarificationDocType clarificationDoc = exportd.Items[0] as clarificationDocType;
+                                                        string unf_json = JsonConvert.SerializeObject(clarificationDoc);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = clarificationDoc.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = clarificationDoc.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
                                                     }
-                                                    catch (Exception ex)
+                                                
+                                                case "epClarificationResult": //epClarificationResult; clarificationResultType - Запрос о даче разъяснений результатов;
                                                     {
-                                                        Console.WriteLine(ex);
+                                                        clarificationResultType clarificationResult = exportd.Items[0] as clarificationResultType;
+                                                        string unf_json = JsonConvert.SerializeObject(clarificationResult);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = clarificationResult.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = clarificationResult.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
                                                     }
-                                                    var pnum = fcsNotificationEP.purchaseNumber;
-                                                    var etype = exportd.Items[0].GetType().Name;
-                                                    var pdate = fcsNotificationEP.docPublishDate;
-                                                    //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
-                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                                    break;
-                                                }
-                                            case "fcsClarification":
-                                                {
-                                                    string exp_json = JsonConvert.SerializeObject(exportd);
-                                                    var EData = JsonConvert.DeserializeObject<export>(exp_json);
-                                                    zfcs_clarificationType fcsClarification = exportd.Items[0] as zfcs_clarificationType;
-                                                    string unf_json = JsonConvert.SerializeObject(fcsClarification);
-                                                    var pnum = fcsClarification.purchaseNumber;
-                                                    var etype = exportd.Items[0].GetType().Name;
-                                                    var pdate = fcsClarification.docPublishDate;
-                                                    //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
 
-                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                                    break;
-                                                }
-                                            case "fcsNotificationEF":
-                                                {
-                                                    string exp_json = JsonConvert.SerializeObject(exportd);
-                                                    zfcs_notificationEFType fcsNotificationEF = exportd.Items[0] as zfcs_notificationEFType;
-                                                    string unf_json = JsonConvert.SerializeObject(fcsNotificationEF);
-                                                    var pnum = fcsNotificationEF.purchaseNumber;
-                                                    var etype = exportd.Items[0].GetType().Name;
-                                                    var pdate = fcsNotificationEF.docPublishDate;
-                                                    //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
 
-                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                                    break;
-                                                }
+                                                case "epNotificationCancel": //epNotificationCancel;notificationCancelType1 - Извещение об отмене определения поставщика (подрядчика, исполнителя) в электронной форме;
+                                                    {
+                                                        notificationCancelType1 notificationCancel = exportd.Items[0] as notificationCancelType1;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationCancel);
 
-                                            case "contractProcedure":
-                                                {
-                                                    string exp_json = JsonConvert.SerializeObject(exportd);
-                                                    zfcs_contractProcedure2015Type contractProcedure = exportd.Items[0] as zfcs_contractProcedure2015Type;
+                                                        var fscn = new Notifications();
 
-                                                    string unf_json = JsonConvert.SerializeObject(contractProcedure);
-                                                    var cnum = contractProcedure.regNum;
-                                                    var etype = exportd.Items[0].GetType().Name;
-                                                    var pdate = contractProcedure.publishDate;
-                                                    //contractProcedure(_connectionDB.ConnectionDB1, cnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
-                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                                    break;
-                                                }
-                                            case "contract":
-                                                {
-                                                    string exp_json = JsonConvert.SerializeObject(exportd);
-                                                    zfcs_contract2015Type contract = exportd.Items[0] as zfcs_contract2015Type;
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationCancel.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = notificationCancel.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
 
-                                                    string unf_json = JsonConvert.SerializeObject(contract);
-                                                    var cnum = contract.regNum;
-                                                    var etype = exportd.Items[0].GetType().Name;
-                                                    var pdate = contract.publishDate;
-                                                    //contractProcedure(cnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
-                                                    Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
-                                                    break;
-                                                }
+                                                case "epNotificationCancelFailure": //epNotificationCancelFailure;notificationCancelFailureType - Отмена извещения об отмене определения поставщика (подрядчика, исполнителя) в электронной форме;
+                                                    {
+                                                        notificationCancelFailureType notificationCancelF = exportd.Items[0] as notificationCancelFailureType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationCancelF);
 
-                                            default:
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationCancelF.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = notificationCancelF.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                case "epNotificationEOK": //epNotificationEOK;notificationEOKType - Извещение о проведении ЭOK;
+                                                    {
+                                                        notificationEOKType notificationEOK = exportd.Items[0] as notificationEOKType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationEOK);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationEOK.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = notificationEOK.commonInfo.publishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        //SaveNotification(pnum, exp_json, etype, zipPath, xml_f_name, 44, pdate);
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                case "epNotificationEOKOU": //epNotificationEOKOU;notificationEOKOUType - Извещение о проведении ЭOK-ОУ
+                                                    {
+                                                        notificationEOKOUType notificationEOKOU = exportd.Items[0] as notificationEOKOUType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationEOKOU);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationEOKOU.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = notificationEOKOU.commonInfo.publishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                case "epNotificationEZK": //epNotificationEZK;notificationEZKType - Извещение о проведении ЭЗК;
+                                                    {
+                                                        notificationEZKType notificationEZK = exportd.Items[0] as notificationEZKType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationEZK);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationEZK.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = notificationEZK.commonInfo.publishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                
+
+                                                case "epNotificationEZP": //epNotificationEZP;notificationEZPType - Извещение о проведении ЭЗП;
+                                                    {
+                                                        notificationEZPType notificationEZP = exportd.Items[0] as notificationEZPType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationEZP);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationEZP.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = notificationEZP.commonInfo.publishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                
+                                                case "epProlongationEOK": //epProlongationEOK;prolongationEOKType - Извещение о продлении срока подачи заявок на участие в ЭOK;
+                                                    {
+                                                        prolongationEOKType prolongationEOK = exportd.Items[0] as prolongationEOKType;
+                                                        string unf_json = JsonConvert.SerializeObject(prolongationEOK);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = prolongationEOK.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = prolongationEOK.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                    
+                                                case "epProlongationEOKOU": //epProlongationEOKOU; prolongationEOKOUType - Извещение о продлении срока подачи заявок на участие в ЭOK - ОУ;
+                                                    {
+                                                        prolongationEOKOUType prolongationEOKOU = exportd.Items[0] as prolongationEOKOUType;
+                                                        string unf_json = JsonConvert.SerializeObject(prolongationEOKOU);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = prolongationEOKOU.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = prolongationEOKOU.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                
+                                                case "epProlongationEZK": //epProlongationEZK; prolongationEZKType - Извещение о продлении срока подачи заявок на участие в ЭЗК;
+                                                    {
+                                                        prolongationEZKType prolongationEZKT = exportd.Items[0] as prolongationEZKType;
+                                                        string unf_json = JsonConvert.SerializeObject(prolongationEZKT);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = prolongationEZKT.commonInfo.purchaseNumber;
+                                                        fscn.PublishDate = prolongationEZKT.commonInfo.docPublishDTInEIS;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                
+                                                case "fcs_notificationEFDateChange": //fcs_notificationEFDateChange; zfcs_notificationEFDateChangeType - Уведомление об изменении даты и времени проведения электронного аукциона
+                                                    {
+                                                        zfcs_notificationEFDateChangeType zfcsnEFDC = exportd.Items[0] as zfcs_notificationEFDateChangeType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcsnEFDC);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcsnEFDC.purchaseNumber;
+                                                        fscn.PublishDate = zfcsnEFDC.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                case "fcsClarification": //fcsClarification; zfcs_clarificationType - Разъяснение положений документации;
+                                                    {
+                                                        zfcs_clarificationType zfcs_clarification = exportd.Items[0] as zfcs_clarificationType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_clarification);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_clarification.purchaseNumber;
+                                                        fscn.PublishDate = zfcs_clarification.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                
+                                                case "fcsNotification111": //fcsNotification111; zfcs_notificationI111Type - Извещение о проведении закупки способом определения поставщика(подрядчика, исполнителя),
+                                                                         //установленным Правительством Российской Федерации в соответствии со ст. 111 Федерального закона № 44 - ФЗ;
+                                                    {
+                                                        zfcs_notificationI111Type zfcs_notificationI111 = exportd.Items[0] as zfcs_notificationI111Type;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_notificationI111);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_notificationI111.purchaseNumber;
+                                                        fscn.PublishDate = zfcs_notificationI111.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                
+                                                case "fcsNotificationCancel": //fcsNotificationCancel; zfcs_notificationCancelType - Извещение об отмене определения поставщика(подрядчика, исполнителя);
+                                                    {
+                                                        zfcs_notificationCancelType zfcs_notificationCancel = exportd.Items[0] as zfcs_notificationCancelType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_notificationCancel);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_notificationCancel.purchaseNumber;
+                                                        fscn.PublishDate = zfcs_notificationCancel.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                case "fcsNotificationCancelFailure": //fcsNotificationCancelFailure; zfcs_notificationCancelFailureType - Отмена извещения об отмене определения поставщика(подрядчика, исполнителя)(в части лота);
+                                                    {
+                                                        zfcs_notificationCancelFailureType zfcs_notificationCancelFailure = exportd.Items[0] as zfcs_notificationCancelFailureType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_notificationCancelFailure);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_notificationCancelFailure.purchaseNumber;
+                                                        fscn.PublishDate = zfcs_notificationCancelFailure.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                case "fcsNotificationEF": //fcsNotificationEF; zfcs_notificationEFType - Извещение о проведении ЭА(электронный аукцион); внесение изменений;
+                                                    {
+                                                        zfcs_notificationEFType zfcs_notificationEF = exportd.Items[0] as zfcs_notificationEFType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_notificationEF);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_notificationEF.purchaseNumber;
+                                                        fscn.PublishDate = zfcs_notificationEF.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                case "fcsNotificationZakA": //fcsNotificationZakA; zfcs_notificationZakAType - Извещение о проведении ЗакА(закрытый аукцион); внесение изменений;
+                                                    {
+                                                        zfcs_notificationZakAType zfcs_notificationZakA = exportd.Items[0] as zfcs_notificationZakAType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_notificationZakA);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_notificationZakA.purchaseNumber;
+                                                        fscn.PublishDate = zfcs_notificationZakA.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                
+                                                case "fcsPlacementResult": //fcsPlacementResult; zfcs_placementResultType - Результат проведения процедуры определения поставщика;
+                                                    {
+                                                        zfcs_placementResultType zfcs_placementResult = exportd.Items[0] as zfcs_placementResultType;
+                                                        string unf_json = JsonConvert.SerializeObject(zfcs_placementResult);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = zfcs_placementResult.purchaseNumber;
+                                                        fscn.ProtocolNum = zfcs_placementResult.protocolNumber;
+                                                        fscn.PublishDate = zfcs_placementResult.createDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                case "pprf615NotificationCancel": //pprf615NotificationCancel; notificationCancelType - Извещение об отмене закупки по ПП РФ № 615;
+                                                    {
+                                                        notificationCancelType pprf615NotificationCancel = exportd.Items[0] as notificationCancelType;
+                                                        string unf_json = JsonConvert.SerializeObject(pprf615NotificationCancel);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = pprf615NotificationCancel.commonInfo.purchaseNumber;
+                                                        //fscn.ProtocolNum = pprf615NotificationCancel.cancelReasonInfo;
+                                                        fscn.PublishDate = pprf615NotificationCancel.commonInfo.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+                                                case "pprf615NotificationEF": //pprf615NotificationEF; notificationEFType - Извещение о проведении ЭА(электронный аукцион) по ПП РФ № 615; внесение изменений;
+                                                    {
+                                                        notificationEFType notificationEF = exportd.Items[0] as notificationEFType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationEF);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationEF.commonInfo.purchaseNumber;
+                                                        //fscn.ProtocolNum = notificationEF.purchaseResponsibleInfo;
+                                                        fscn.PublishDate = notificationEF.commonInfo.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+                                                case "pprf615NotificationPO": //pprf615NotificationPO; notificationPOType - Извещение о проведении ПО(предварительный отбор) по ПП РФ № 615; внесение изменений;
+                                                    {
+                                                        notificationPOType notificationPO = exportd.Items[0] as notificationPOType;
+                                                        string unf_json = JsonConvert.SerializeObject(notificationPO);
+
+                                                        var fscn = new Notifications();
+
+                                                        //fscn.Wname = "";
+                                                        fscn.R_body = unf_json;
+                                                        fscn.Xml_body = read_xml_text;
+                                                        fscn.Hash = hashstr;
+                                                        fscn.ContractConclusion = "";
+                                                        fscn.Inn = "";
+                                                        fscn.AppRating = 0;
+                                                        fscn.Zip_file = nFile.Full_path;
+                                                        fscn.File_name = entry.FullName;
+                                                        fscn.Fz_type = 44;
+                                                        //fscn.JournalNumber = ;
+                                                        fscn.Purchase_num = notificationPO.commonInfo.purchaseNumber;
+                                                        //fscn.ProtocolNum = notificationPO.commonInfo.
+                                                        fscn.PublishDate = notificationPO.commonInfo.docPublishDate;
+                                                        fscn.Type_notif = exportd.Items[0].GetType().Name;
+                                                        notifications.Add(fscn);
+                                                        //_dataServices.SaveNotification(notifications);
+                                                        break;
+                                                    }
+
+
+
+
+                                                default:
                                                 {
 
                                                     if (exportd.Items.Length > 1)
@@ -239,7 +805,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                     string exp_json = JsonConvert.SerializeObject(exportd);
                                                     var EData = JsonConvert.DeserializeObject<export>(exp_json);
                                                     string eltype = $"{exportd.ItemsElementName[0].ToString()};{exportd.Items[0].GetType().Name}";
-                                                    string fnel = $"{exportd.Items[0].GetType().Name}";
+                                                    string fnel = $"{exportd.ItemsElementName[0].ToString()}";
 
                                                     using (StreamWriter sw1 = new StreamWriter(@$"D:\\FZ\\Types44\\{fnel}", true, System.Text.Encoding.Default))
                                                     {
@@ -274,6 +840,9 @@ namespace DownLoaderZakupki.Core.Jobs
                         }
                 }
 
+
+                Console.WriteLine($"Всего добавляется записей в БД: {notifications.Count}");
+                _dataServices.SaveNotification(notifications);
                 nFile.Status = Status.Processed;
                 _dataServices.UpdateCasheFiles(nFile);
 

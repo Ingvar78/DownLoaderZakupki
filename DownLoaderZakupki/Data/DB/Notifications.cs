@@ -60,6 +60,17 @@ namespace DownLoaderZakupki.Data.DB
         /// </summary>
         [Column(TypeName = "jsonb")]
         public string R_body { get; set; }
+
+        /// <summary>
+        /// Тело извещения XML
+        /// </summary>
+        [Column(TypeName = "xml")]
+        public string Xml_body { get; set; }
+        /// <summary>
+        /// Хэш XML данных
+        /// </summary>
+        [Column(TypeName = "varchar(64)")]
+        public string Hash { get; set; }
         /// <summary>
         /// Тип извещения
         /// </summary>
