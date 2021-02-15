@@ -79,7 +79,7 @@ namespace DownLoaderZakupki.Data.DB
         /// <summary>
         /// Архив источник
         /// </summary>
-        [Column(TypeName = "varchar(128)")]
+        [Column(TypeName = "varchar(256)")]
         public string Zip_file { get; set; }
         /// <summary>
         /// Файл источник
