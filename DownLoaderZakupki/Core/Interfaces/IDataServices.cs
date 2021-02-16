@@ -55,5 +55,11 @@ namespace DownLoaderZakupki.Core.Interfaces
         /// </summary>
         /// <param name="notifications"></param>
         void SaveNotification(List<Notifications> notifications);
+
+        /// <summary>
+        /// Сохранение данных контрактов
+        /// </summary>
+        /// <param name="contracts"></param>
+        void SaveContracts(List<Contracts> contracts);
     }
 }

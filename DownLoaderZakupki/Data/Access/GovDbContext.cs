@@ -46,7 +46,7 @@ namespace DownLoaderZakupki.Data.Access
         public DbSet<NsiPlacingWays> NsiPlacingWays { get; set; }
         public DbSet<NsiOrganizations> NsiOrganizations { get; set; }
         public DbSet<Notifications> Notifications { get; set; }
-
+        public DbSet<Contracts> Contracts { get; set; }
         int IGovDbContext.SaveChanges()
         {
             return this.SaveChangesInternal();

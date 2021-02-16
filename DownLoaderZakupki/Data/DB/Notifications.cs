@@ -21,6 +21,17 @@ namespace DownLoaderZakupki.Data.DB
         [Column(TypeName = "varchar(100)")]
         public string ProtocolNum { get; set; }
         /// <summary>
+        /// Тело извещения
+        /// </summary>
+        [Column(TypeName = "jsonb")]
+        public string R_body { get; set; }
+        /// <summary>
+        /// Тело извещения XML
+        /// </summary>
+        [Column(TypeName = "xml")]
+        public string Xml_body { get; set; }
+
+        /// <summary>
         /// ИНН участника
         /// </summary>
         [Column(TypeName = "varchar(12)")]
@@ -55,17 +66,6 @@ namespace DownLoaderZakupki.Data.DB
         /// </summary>
         [Column(TypeName = "numeric(18,2)")]
         public decimal W_price { get; set; }
-        /// <summary>
-        /// Тело извещения
-        /// </summary>
-        [Column(TypeName = "jsonb")]
-        public string R_body { get; set; }
-
-        /// <summary>
-        /// Тело извещения XML
-        /// </summary>
-        [Column(TypeName = "xml")]
-        public string Xml_body { get; set; }
         /// <summary>
         /// Хэш XML данных
         /// </summary>

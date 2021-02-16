@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DownLoaderZakupki.Core.Services
 {
-    internal class DataServices: IDataServices
+    internal class DataServices : IDataServices
     {
         private readonly IGovDbManager _govDb;
         private readonly ILogger _logger;
@@ -85,7 +85,7 @@ namespace DownLoaderZakupki.Core.Services
                         var find = db.NsiOrganizations
                         .AsNoTracking()
                         .Where(x => x.RegNumber == organization.RegNumber
-                        && x.Fz_type==organization.Fz_type)
+                        && x.Fz_type == organization.Fz_type)
                         .SingleOrDefault();
 
                         if (find == null)
@@ -99,9 +99,9 @@ namespace DownLoaderZakupki.Core.Services
                             find.FullName = organization.FullName;
                             find.IsActual = organization.IsActual;
                             find.Inn = organization.Inn ?? string.Empty;
-                            find.Kpp = organization.Kpp?? string.Empty;
+                            find.Kpp = organization.Kpp ?? string.Empty;
                             find.Ogrn = organization.Ogrn ?? string.Empty;
-                            find.RegistrationDate = organization.RegistrationDate;                           
+                            find.RegistrationDate = organization.RegistrationDate;
                             find.Accounts = organization.Accounts;
                             db.NsiOrganizations.Update(find);
                             db.SaveChanges();
@@ -221,11 +221,10 @@ namespace DownLoaderZakupki.Core.Services
 
         }
 
-
         /// <summary>
-        /// Сохранение данных организации из справочника.
+        /// Сохранение данных извещений.
         /// </summary>
-        /// <param name="nsiOrganizations"></param>
+        /// <param name="notifications"></param>
         public void SaveNotification(List<Notifications> notifications)
         {
 
@@ -240,7 +239,7 @@ namespace DownLoaderZakupki.Core.Services
                         .Where(x => x.Purchase_num == notif.Purchase_num
                         && x.Fz_type == notif.Fz_type
                         && x.PublishDate == notif.PublishDate
-                        && x.Hash ==notif.Hash)
+                        && x.Hash == notif.Hash)
                         .SingleOrDefault();
 
                         if (find == null)
@@ -268,8 +267,41 @@ namespace DownLoaderZakupki.Core.Services
                 }
             }
         }
+        /// <summary>
+        /// Сохранение данных контрактов.
+        /// </summary>
+        /// <param name="contracts"></param>
+        public void SaveContracts(List<Contracts> contracts)
+        {
+            foreach (var c in contracts)
+            {
+                using (var db = _govDb.GetContext())
+                {
+                    try
+                    {
+                        var find = db.Contracts
+                        .AsNoTracking()
+                        .Where(x => x.Contract_num == c.Contract_num
+                        && x.Fz_type == c.Fz_type
+                        && x.PublishDate == c.PublishDate
+                        && x.Hash == c.Hash)
+                        .SingleOrDefault();
 
+                        if (find == null)
+                        {
+                            db.Contracts.Add(c);
+                            db.SaveChanges();
+                        }
+                        
 
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+                }
+            }
+        }
         #endregion Data File Cash
 
     }
