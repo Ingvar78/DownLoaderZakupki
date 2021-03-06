@@ -61,5 +61,11 @@ namespace DownLoaderZakupki.Core.Interfaces
         /// </summary>
         /// <param name="contracts"></param>
         void SaveContracts(List<Contracts> contracts);
+
+        /// <summary>
+        /// Сохранение данных протоколов
+        /// </summary>
+        /// <param name="protocols"></param>
+        void SaveProtocols(List<Protocols> protocols);
     }
 }

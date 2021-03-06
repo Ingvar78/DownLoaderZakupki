@@ -59,22 +59,25 @@ namespace DownLoaderZakupki.Core.Jobs
                                 //var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 //while (check.Count > 0)
                                 //{
-                                //    ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                   // ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
                                 //    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
                                 //}
                             }
                             break;
                         case "contracts":
                             {
-                                //var tt2 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                ParseContracts(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
-                                //ParseContracts(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                //ParseContracts(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
                             }
                             break;
                         case "protocols":
                             {
-                                var tt3 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                //ParseProtocols(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                while (check.Count > 0)
+                                {
+
+                                    ParseProtocols(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                }
                             }
                             break;
                         case "contractprojects":

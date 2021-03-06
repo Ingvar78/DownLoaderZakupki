@@ -47,6 +47,7 @@ namespace DownLoaderZakupki.Data.Access
         public DbSet<NsiOrganizations> NsiOrganizations { get; set; }
         public DbSet<Notifications> Notifications { get; set; }
         public DbSet<Contracts> Contracts { get; set; }
+        public DbSet<Protocols> Protocols { get; set; }
         int IGovDbContext.SaveChanges()
         {
             return this.SaveChangesInternal();

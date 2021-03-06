@@ -48,6 +48,11 @@ namespace DownLoaderZakupki.Data.Access
         /// Данные процедур контрактов по 44 ФЗ 
         /// </summary>
         DbSet<Contracts> Contracts { get; set; }
+
+        /// <summary>
+        /// Данные протоколов по 44ФЗ
+        /// </summary>
+        DbSet<Protocols> Protocols { get; set; }
         int SaveChanges();
     }
 }

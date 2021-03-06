@@ -302,7 +302,40 @@ namespace DownLoaderZakupki.Core.Services
                 }
             }
         }
+
+        public void SaveProtocols(List<Protocols> protocols)
+        {
+
+            foreach (var p in protocols)
+            {
+                using (var db = _govDb.GetContext())
+                {
+                    try
+                    {
+                        var find = db.Protocols
+                        .AsNoTracking()
+                        .Where(x => x.Protocol_num == p.Protocol_num
+                        && x.Fz_type == p.Fz_type
+                        && x.PublishDate == p.PublishDate
+                        && x.Hash == p.Hash)
+                        .SingleOrDefault();
+
+                        if (find == null)
+                        {
+                            db.Protocols.Add(p);
+                            db.SaveChanges();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, ex.Message);
+                    }
+                }
+            }
+
+        }
         #endregion Data File Cash
+
 
     }
 }
