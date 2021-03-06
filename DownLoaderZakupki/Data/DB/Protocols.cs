@@ -14,12 +14,13 @@ namespace DownLoaderZakupki.Data.DB
         /// <summary>
         /// Номер извещения об осуществлении закупки
         /// </summary>
+        [Column(TypeName = "varchar(20)")]
         public string Purchase_num { get; set; }
 
         /// <summary>
         /// Номер протокола
         /// </summary>
-        [Column(TypeName = "varchar(20)")]
+        [Column(TypeName = "varchar(30)")]
         public string Protocol_num { get; set; }
 
         /// <summary>
