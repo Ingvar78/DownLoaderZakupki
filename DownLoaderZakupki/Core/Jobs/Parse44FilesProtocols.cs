@@ -10,6 +10,7 @@ using DownLoaderZakupki.Models.Ext.Fz44;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
@@ -19,9 +20,11 @@ namespace DownLoaderZakupki.Core.Jobs
         void ParseProtocols(List<FileCashes> FileCashes)
         {
 
-
-            foreach (var nFile in FileCashes)
-            {
+            Parallel.ForEach(FileCashes,
+                new ParallelOptions { MaxDegreeOfParallelism = _fzSettings44.Parallels },
+                (nFile) =>
+                //foreach (var nFile in FileCashes)
+                {
                 string zipPath = (_fzSettings44.WorkPath + nFile.Full_path);
                 string extractPath = (_fzSettings44.WorkPath + "/extract" + nFile.Full_path);
                 var protocols = new List<Protocols>();
@@ -67,7 +70,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                         var hashstr = strBuilder.ToString();
 
-                                        Console.WriteLine($"{hashstr}");
+                                        //Console.WriteLine($"{hashstr}");
 
                                         using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
@@ -75,7 +78,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                             XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                             export exportd = xmlser.Deserialize(reader) as export;
-                                            Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                            //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
 
 
                                             var settings = new JsonSerializerSettings()
@@ -105,7 +108,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOK1": //epProtocolEOK1; protocolEOK1Type - Протокол рассмотрения и оценки первых частей заявок на участие в ЭOK;
                                                     {
                                                         protocolEOK1Type epProtocolEOK1 = exportd.Items[0] as protocolEOK1Type;
@@ -143,7 +146,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOK3": //epProtocolEOK3;protocolEOK3Type - Протокол подведения итогов ЭOK;
                                                     {
                                                         protocolEOK3Type epProtocolEOK3 = exportd.Items[0] as protocolEOK3Type;
@@ -162,7 +165,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKD1": //epProtocolEOKD1;protocolEOKD1Type - Протокол первого этапа ЭOKД;
                                                     {
                                                         protocolEOKD1Type epProtocolEOKD1 = exportd.Items[0] as protocolEOKD1Type;
@@ -181,7 +184,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKOU1": //epProtocolEOKOU1;protocolEOKOU1Type - Протокол рассмотрения и оценки первых частей заявок на участие в ЭOK-ОУ;
                                                     {
                                                         protocolEOKOU1Type epProtocolEOKOU1 = exportd.Items[0] as protocolEOKOU1Type;
@@ -200,7 +203,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKOU2": //epProtocolEOKOU2; protocolEOKOU2Type - Протокол рассмотрения и оценки вторых частей заявок на участие в ЭOK-ОУ;
                                                     {
                                                         protocolEOKOU2Type epProtocolEOKOU2 = exportd.Items[0] as protocolEOKOU2Type;
@@ -219,7 +222,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKOU3": //epProtocolEOKOU3; protocolEOKOU3Type - Протокол подведения итогов ЭOK - ОУ;
                                                     {
                                                         protocolEOKOU3Type epProtocolEOKOU3 = exportd.Items[0] as protocolEOKOU3Type;
@@ -238,7 +241,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKOUSingleApp": //epProtocolEOKOUSingleApp; protocolEOKOUSingleAppType - Протокол рассмотрения единственной заявки на участие ЭOK-ОУ;
                                                     {
                                                         protocolEOKOUSingleAppType epProtocolEOKOUSingleApp = exportd.Items[0] as protocolEOKOUSingleAppType;
@@ -257,7 +260,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKOUSinglePart": //epProtocolEOKOUSinglePart; protocolEOKOUSinglePartType - Протокол рассмотрения заявки единственного участника ЭOK - ОУ;
                                                     {
                                                         protocolEOKOUSinglePartType epProtocolEOKOUSinglePart = exportd.Items[0] as protocolEOKOUSinglePartType;
@@ -276,7 +279,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKSingleApp": //epProtocolEOKSingleApp; protocolEOKSingleAppType - Протокол рассмотрения единственной заявки на участие ЭOK;
                                                     {
                                                         protocolEOKSingleAppType epProtocolEOKSingleApp = exportd.Items[0] as protocolEOKSingleAppType;
@@ -295,7 +298,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEOKSinglePart": //epProtocolEOKSinglePart; protocolEOKSinglePartType - Протокол рассмотрения заявки единственного участника ЭOK;
                                                     {
                                                         protocolEOKSinglePartType epProtocolEOKSinglePart = exportd.Items[0] as protocolEOKSinglePartType;
@@ -314,7 +317,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEZK1": //epProtocolEZK1;protocolEZK1Type - Протокол рассмотрения заявок на участие в ЭЗК;
                                                     {
                                                         protocolEZK1Type epProtocolEZK1 = exportd.Items[0] as protocolEZK1Type;
@@ -333,7 +336,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEZK2": //epProtocolEZK2; protocolEZK2Type - Протокол рассмотрения и оценки заявок на участие в ЭЗК;
                                                     {
                                                         protocolEZK2Type epProtocolEZK2 = exportd.Items[0] as protocolEZK2Type;
@@ -352,7 +355,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEZP1": //epProtocolEZP1;protocolEZP1Type - Протокол проведения ЭЗП;
                                                     {
                                                         protocolEZP1Type epProtocolEZP1 = exportd.Items[0] as protocolEZP1Type;
@@ -371,7 +374,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEZP1Extract": //epProtocolEZP1Extract;protocolEZP1ExtractType - Выписка из протокола проведения ЭЗП;
                                                     {
                                                         protocolEZP1ExtractType epProtocolEZP1Extract = exportd.Items[0] as protocolEZP1ExtractType;
@@ -390,7 +393,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "epProtocolEZP2": //epProtocolEZP2;protocolEZP2Type - Итоговый протокол ЭЗП;
                                                     {
                                                         protocolEZP2Type epProtocolEZP2 = exportd.Items[0] as protocolEZP2Type;
@@ -411,7 +414,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         break;
                                                     }
 
-                                                
+
                                                 case "fcsProtocolCancel": //fcsProtocolCancel;zfcs_protocolCancelType - Информация об отмене протокола;
                                                     {
                                                         zfcs_protocolCancelType fcsProtocolCancel = exportd.Items[0] as zfcs_protocolCancelType;
@@ -431,7 +434,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolDeviation": //fcsProtocolDeviation;zfcs_protocolDeviationType - Протокол признания участника уклонившимся от заключения контракта; внесение изменений;
                                                     {
                                                         zfcs_protocolDeviationType fcsProtocolDeviation = exportd.Items[0] as zfcs_protocolDeviationType;
@@ -452,7 +455,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         break;
                                                     }
 
-                                                
+
                                                 case "fcsProtocolEF1": //fcsProtocolEF1;zfcs_protocolEF1Type - Протокол рассмотрения заявок на участие в электронном аукционе;
                                                     {
                                                         zfcs_protocolEF1Type fcsProtocolEF1 = exportd.Items[0] as zfcs_protocolEF1Type;
@@ -472,7 +475,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolEF2": //fcsProtocolEF2; zfcs_protocolEF2Type - Протокол проведения электронного аукциона;
                                                     {
                                                         zfcs_protocolEF2Type fcsProtocolEF2 = exportd.Items[0] as zfcs_protocolEF2Type;
@@ -492,7 +495,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolEF3": //fcsProtocolEF3; zfcs_protocolEF3Type - Протокол подведения итогов электронного аукциона;
                                                     {
                                                         zfcs_protocolEF3Type fcsProtocolEF3 = exportd.Items[0] as zfcs_protocolEF3Type;
@@ -512,7 +515,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolEFInvalidation": //fcsProtocolEFInvalidation; zfcs_protocolEFInvalidationType - Протокол о признании электронного аукциона несостоявшимся;
                                                     {
                                                         zfcs_protocolEFInvalidationType fcsProtocolEFInvalidation = exportd.Items[0] as zfcs_protocolEFInvalidationType;
@@ -532,7 +535,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolEFSingleApp": //fcsProtocolEFSingleApp; zfcs_protocolEFSingleAppType - Протокол рассмотрения единственной заявки на участие в электронном аукционе;
                                                     {
                                                         zfcs_protocolEFSingleAppType fcsProtocolEFSingleApp = exportd.Items[0] as zfcs_protocolEFSingleAppType;
@@ -552,7 +555,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolEFSinglePart": //fcsProtocolEFSinglePart; zfcs_protocolEFSinglePartType - Протокол рассмотрения заявки единственного участника электронного аукциона;
                                                     {
                                                         zfcs_protocolEFSinglePartType fcsProtocolEFSinglePart = exportd.Items[0] as zfcs_protocolEFSinglePartType;
@@ -572,7 +575,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolEvasion": //fcsProtocolEvasion; zfcs_protocolEvasionType - Протокол отказа от заключения контракта; внесение изменений;
                                                     {
                                                         zfcs_protocolEvasionType fcsProtocolEvasion = exportd.Items[0] as zfcs_protocolEvasionType;
@@ -592,7 +595,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolOK1": //fcsProtocolOK1; zfcs_protocolOK1Type - Протокол вскрытия конвертов с заявками на участие в ОК; внесение изменений;
                                                     {
                                                         zfcs_protocolOK1Type fcsProtocolOK1 = exportd.Items[0] as zfcs_protocolOK1Type;
@@ -612,7 +615,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolOK2": //fcsProtocolOK2; zfcs_protocolOK2Type - Протокол рассмотрения и оценки заявок на участие в конкурсе в ОК; внесение изменений;
                                                     {
                                                         zfcs_protocolOK2Type fcsProtocolOK2 = exportd.Items[0] as zfcs_protocolOK2Type;
@@ -632,7 +635,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolOKSingleApp": //fcsProtocolOKSingleApp;zfcs_protocolOKSingleAppType - Протокол рассмотрения единственной заявки в ОК; внесение изменений; 
                                                     {
                                                         zfcs_protocolOKSingleAppType fcsProtocolOKSingleApp = exportd.Items[0] as zfcs_protocolOKSingleAppType;
@@ -652,7 +655,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolPO": //fcsProtocolPO;zfcs_protocolPOType - Протокол предварительного отбора в ПО; внесение изменений;
                                                     {
                                                         zfcs_protocolPOType fcsProtocolPO = exportd.Items[0] as zfcs_protocolPOType;
@@ -672,7 +675,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "fcsProtocolZK": //fcsProtocolZK;zfcs_protocolZKType - Протокол рассмотрения и оценки заявок в ЗК;
                                                     {
                                                         zfcs_protocolZKType fcsProtocolZK = exportd.Items[0] as zfcs_protocolZKType;
@@ -693,7 +696,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         break;
                                                     }
 
-                                                
+
                                                 case "pprf615ProtocolEF1": //pprf615ProtocolEF1; protocolEF1Type - Протокол рассмотрения заявок на участие в электронном аукционе по ПП РФ № 615; внесение изменений;
                                                     {
                                                         protocolEF1Type pprf615ProtocolEF1 = exportd.Items[0] as protocolEF1Type;
@@ -713,7 +716,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "pprf615ProtocolEF2": //pprf615ProtocolEF2; protocolEF2Type - Протокол проведения электронного аукциона по ПП РФ № 615; внесение изменений;
                                                     {
                                                         protocolEF2Type pprf615ProtocolEF2 = exportd.Items[0] as protocolEF2Type;
@@ -733,7 +736,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                         protocols.Add(frpotocols);
                                                         break;
                                                     }
-                                                
+
                                                 case "pprf615ProtocolPO": //pprf615ProtocolPO; protocolPOType - Протокол предварительного отбора в ПО по ПП РФ № 615; внесение изменений;
                                                     {
                                                         protocolPOType pprf615ProtocolPO = exportd.Items[0] as protocolPOType;
@@ -801,13 +804,13 @@ namespace DownLoaderZakupki.Core.Jobs
                 }
 
 
-                Console.WriteLine($"Всего добавляется записей в БД: {protocols.Count}");
+                Console.WriteLine($"Всего добавляется Protocols записей в БД: {protocols.Count}");
                 _dataServices.SaveProtocols(protocols);
                 nFile.Status = Status.Processed;
                 _dataServices.UpdateCasheFiles(nFile);
 
                 Directory.Delete(extractPath, true);
-            }
+            });
 
 
         }

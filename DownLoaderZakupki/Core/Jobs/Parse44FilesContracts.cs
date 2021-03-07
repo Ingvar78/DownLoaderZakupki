@@ -10,6 +10,7 @@ using DownLoaderZakupki.Models.Ext.Fz44;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
@@ -19,9 +20,11 @@ namespace DownLoaderZakupki.Core.Jobs
         void ParseContracts(List<FileCashes> FileCashes)
         {
 
-
-            foreach (var nFile in FileCashes)
-            {
+            Parallel.ForEach(FileCashes,
+                new ParallelOptions { MaxDegreeOfParallelism = _fzSettings44.Parallels },
+                (nFile) =>
+                //foreach (var nFile in FileCashes)
+                {
                 string zipPath = (_fzSettings44.WorkPath + nFile.Full_path);
                 string extractPath = (_fzSettings44.WorkPath + "/extract" + nFile.Full_path);
                 var contracts = new List<Contracts>();
@@ -36,6 +39,7 @@ namespace DownLoaderZakupki.Core.Jobs
                 if (File.Exists(zipPath))
                 {
                     using (ZipArchive archive = ZipFile.OpenRead(zipPath))
+
                         foreach (ZipArchiveEntry entry in archive.Entries)
                         {
                             if (entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
@@ -67,7 +71,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                         var hashstr = strBuilder.ToString();
 
-                                        Console.WriteLine($"{hashstr}");
+                                        //Console.WriteLine($"{hashstr}");
 
                                         using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
@@ -75,7 +79,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                             XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                             export exportd = xmlser.Deserialize(reader) as export;
-                                            Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                            //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
 
 
                                             var settings = new JsonSerializerSettings()
@@ -153,7 +157,7 @@ namespace DownLoaderZakupki.Core.Jobs
                                                     }
                                                 case "contractProcedureCancel": //contractProcedureCancel;zfcs_contractProcedureCancel2015Type - Сведения об отмене информации об исполнении (расторжении) контракта;
                                                     {
-                                                        zfcs_contractProcedureCancel2015Type contractProcedureCancel  = exportd.Items[0] as zfcs_contractProcedureCancel2015Type;
+                                                        zfcs_contractProcedureCancel2015Type contractProcedureCancel = exportd.Items[0] as zfcs_contractProcedureCancel2015Type;
                                                         string unf_json = JsonConvert.SerializeObject(contractProcedureCancel);
 
                                                         var fcontract = new Contracts();
@@ -219,13 +223,13 @@ namespace DownLoaderZakupki.Core.Jobs
                 }
 
 
-                Console.WriteLine($"Всего добавляется записей в БД: {contracts.Count}");
+                Console.WriteLine($"Всего добавляется записей Contracts в БД: {contracts.Count}");
                 _dataServices.SaveContracts(contracts);
                 nFile.Status = Status.Processed;
                 _dataServices.UpdateCasheFiles(nFile);
 
                 Directory.Delete(extractPath, true);
-            }
+            });
 
 
         }

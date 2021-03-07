@@ -20,7 +20,7 @@ namespace DownLoaderZakupki.Data.DB
         /// <summary>
         /// Номер протокола
         /// </summary>
-        [Column(TypeName = "varchar(30)")]
+        [Column(TypeName = "varchar(100)")]
         public string Protocol_num { get; set; }
 
         /// <summary>

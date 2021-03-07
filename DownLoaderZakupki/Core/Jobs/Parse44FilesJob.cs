@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -49,24 +50,31 @@ namespace DownLoaderZakupki.Core.Jobs
                 var basepath = _fzSettings44.BaseDir;
                 var dirlist = _fzSettings44.DocDirList;
                 var parallels44 = _fzSettings44.Parallels;
-                foreach (var dir in dirlist)
+
+                Parallel.ForEach(dirlist,
+                new ParallelOptions { MaxDegreeOfParallelism = _fzSettings44.Parallels },
+                (dir) =>
                 {
-                    switch (dir)
+                switch (dir)
                     {
                         case "notifications":
                             {
-                                //ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
-                                //var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                //while (check.Count > 0)
-                                //{
-                                   // ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
-                                //    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
-                                //}
+                                var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                while (check.Count > 0)
+                                {
+                                    ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                }
                             }
                             break;
                         case "contracts":
                             {
-                                //ParseContracts(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                while (check.Count > 0)
+                                {
+                                    ParseContracts(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                                    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                                }
                             }
                             break;
                         case "protocols":
@@ -98,8 +106,60 @@ namespace DownLoaderZakupki.Core.Jobs
                             _logger.LogWarning($"Ошибка обработки файла из списка DirsDocs: {dir}, проверьте параметры ФЗ-44, не обработано {tt.Count} файлов");
                             break;
                     }
+                });
 
-                }
+
+                //    foreach (var dir in dirlist)
+                //{
+                //    switch (dir)
+                //    {
+                //        case "notifications":
+                //            {
+                //                ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                //                //var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //                //while (check.Count > 0)
+                //                //{
+                //                   ParseNnotifications(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                //                //    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //                //}
+                //            }
+                //            break;
+                //        case "contracts":
+                //            {
+                //                ParseContracts(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                //            }
+                //            break;
+                //        case "protocols":
+                //            {
+                //                //var check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //                //while (check.Count > 0)
+                //                //{
+
+                //                   ParseProtocols(_dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir));
+                //                //    check = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //                //}
+                //            }
+                //            break;
+                //        case "contractprojects":
+                //            {
+                //                var tt4 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //                //ParseContractProjects(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                //            }
+                //            break;
+                //        case "notificationExceptions":
+                //            {
+                //                var tt5 = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //                //ParseNotificationExceptions(_dataServices.GetFileCashesList(100, Status.Uploaded, FLType.Fl44, basepath, dir));
+                //            }
+                //            break;
+
+                //        default:
+                //            var tt = _dataServices.GetFileCashesList(1000, Status.Uploaded, FLType.Fl44, basepath, dir);
+                //            _logger.LogWarning($"Ошибка обработки файла из списка DirsDocs: {dir}, проверьте параметры ФЗ-44, не обработано {tt.Count} файлов");
+                //            break;
+                //    }
+
+                //}
 
                 _logger.LogInformation("Закончена обработка данных закупок ФЗ-44");
             }

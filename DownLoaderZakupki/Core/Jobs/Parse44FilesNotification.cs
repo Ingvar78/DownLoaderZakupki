@@ -10,6 +10,7 @@ using DownLoaderZakupki.Models.Ext.Fz44;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Xml.Serialization;
+using System.Threading.Tasks;
 
 namespace DownLoaderZakupki.Core.Jobs
 {
@@ -20,9 +21,12 @@ namespace DownLoaderZakupki.Core.Jobs
         {
             //Обрабатываем данный тип;
 
+            Parallel.ForEach(FileCashes,
+                new ParallelOptions { MaxDegreeOfParallelism = _fzSettings44.Parallels },
+                (nFile) =>
 
-            foreach (var nFile in FileCashes)
-            {
+                //foreach (var nFile in FileCashes)
+                {
                 string zipPath = (_fzSettings44.WorkPath + nFile.Full_path);
                 string extractPath = (_fzSettings44.WorkPath + "/extract" + nFile.Full_path);
                 var notifications = new List<Notifications>();
@@ -68,7 +72,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                         var hashstr = strBuilder.ToString();
 
-                                        Console.WriteLine($"{hashstr}");
+                                        //Console.WriteLine($"{hashstr}");
 
                                         using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
@@ -76,7 +80,7 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                             XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                             export exportd = xmlser.Deserialize(reader) as export;
-                                            Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+                                            //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
 
 
                                             var settings = new JsonSerializerSettings()
@@ -907,7 +911,7 @@ namespace DownLoaderZakupki.Core.Jobs
                 _dataServices.UpdateCasheFiles(nFile);
 
                 Directory.Delete(extractPath, true);
-            }
+            });
 
         }
 
