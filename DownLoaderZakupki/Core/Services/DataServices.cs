@@ -8,6 +8,11 @@ using Microsoft.Extensions.Logging;
 using DownLoaderZakupki.Data.DB;
 using DownLoaderZakupki.Models.Enum;
 using Microsoft.EntityFrameworkCore;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.Serialization;
+using DownLoaderZakupki.Data.Extention;
+using Newtonsoft.Json;
 
 namespace DownLoaderZakupki.Core.Services
 {
@@ -336,6 +341,71 @@ namespace DownLoaderZakupki.Core.Services
         }
         #endregion Data File Cash
 
+        #region XMLTransform
+        public string XmlToJson(string pathxml)
+        {
+            var json = "";
+            Console.WriteLine(pathxml);
+            XmlDocument xmldoc = new XmlDocument();
+            try
+            { 
+                xmldoc.Load(pathxml);
+                XmlNode xmlNode = xmldoc.DocumentElement;
+                var childNode = xmlNode.ChildNodes[0];
+                string nodeName = childNode.LocalName;
+                //ToDo RemoveSig
+                RemoveSignatureNodes(childNode);
+                var xDoc = xmldoc.ToXDocument();
+                RemoveDefNamespace(xDoc.Root);
+                var root = xDoc.Root;
+                var rElement = root.Element(nodeName);
+                json = JsonConvert.SerializeXNode(rElement, Newtonsoft.Json.Formatting.Indented, true);
+
+                return json;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, ex.Message + pathxml);
+                json = "";
+            }
+            //finally
+            //{
+            //    json = "";
+            //}
+
+            return json;
+        }
+
+        private static void RemoveDefNamespace(XElement element)
+        {
+            var defNamespase = element.Attribute("xmlns");
+            if (defNamespase != null)
+                defNamespase.Remove();
+
+
+            element.Name = element.Name.LocalName;
+            foreach (var child in element.Elements())
+            {
+                RemoveDefNamespace(child);
+            }
+        }
+
+
+        private static void RemoveSignatureNodes(XmlNode xmlNode)
+        {
+            List<XmlNode> nodesToRemove = new List<XmlNode>();
+            foreach (XmlNode childNodes in xmlNode.ChildNodes)
+            {
+                if (childNodes.Name == "signature" || childNodes.Name == "ns3:signature") nodesToRemove.Add(childNodes);
+                else RemoveSignatureNodes(childNodes);
+            }
+            foreach (var node in nodesToRemove)
+            {
+                xmlNode.RemoveChild(node);
+            }
+        }
+
+        #endregion XMLTransform
 
     }
 }

@@ -67,5 +67,12 @@ namespace DownLoaderZakupki.Core.Interfaces
         /// </summary>
         /// <param name="protocols"></param>
         void SaveProtocols(List<Protocols> protocols);
+
+        /// <summary>
+        /// Преобразование XML в Json для создания модели
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        string XmlToJson(string path);
     }
 }

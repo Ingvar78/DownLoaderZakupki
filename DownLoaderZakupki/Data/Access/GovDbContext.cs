@@ -29,7 +29,7 @@ namespace DownLoaderZakupki.Data.Access
             optionsBuilder.UseLoggerFactory(_loggerFactory);
 #endif
             optionsBuilder.UseNpgsql(_connectionString);
-            //optionsBuilder.UseNpgsql("Host=192.168.1.60;Port=5432;Database=AimGov2;Username=postgres;Password=Zaq1Xsw2Z;Pooling=True");
+            //optionsBuilder.UseNpgsql("Host=192.168.1.120;Port=5432;Database=AimGov2;Username=postgres;Password=Qs73Uq87zaq;Pooling=True");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -70,15 +70,35 @@ namespace DownLoaderZakupki.Core.Jobs
 
                                         var hashstr = strBuilder.ToString();
 
-                                        //Console.WriteLine($"{hashstr}");
+                                            //Console.WriteLine($"{hashstr}");
 
-                                        using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
+                                            var djson =_dataServices.XmlToJson(xmlin);
+
+                                            string jsonpath = (_commonSettings.DebugPath + "/Json" + nFile.Full_path);
+
+                                            if (!Directory.Exists(jsonpath))
+                                            {
+                                                Directory.CreateDirectory(jsonpath);
+                                            }
+                                            //и создаём её заново
+
+
+                                            var savepath = Path.Combine(jsonpath, entry.FullName);
+                                            using (StreamWriter sw1 = new StreamWriter(savepath, true, System.Text.Encoding.Default))
+                                            {
+
+                                                sw1.WriteLine(djson);
+
+                                            };
+
+                                            using (StreamReader reader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
                                             XmlSerializer serializer = new XmlSerializer(typeof(export));
 
                                             XmlSerializer xmlser = new XmlSerializer(typeof(export));
                                             export exportd = xmlser.Deserialize(reader) as export;
                                             //Console.WriteLine($"{exportd.ItemsElementName[0].ToString()}");
+
 
 
                                             var settings = new JsonSerializerSettings()

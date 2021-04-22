@@ -54,7 +54,27 @@ namespace DownLoaderZakupki.Core.Jobs
                                 {
                                     try
                                     {
-                                        string read_xml_text;
+                                            var djson = _dataServices.XmlToJson(xmlin);
+
+                                            string jsonpath = (_commonSettings.DebugPath + "/Json" + nFile.Full_path);
+
+                                            if (!Directory.Exists(jsonpath))
+                                            {
+                                                Directory.CreateDirectory(jsonpath);
+                                            }
+                                            //и создаём её заново
+                                            
+
+                                            var savepath= Path.Combine(jsonpath, entry.FullName);
+                                            using (StreamWriter sw1 = new StreamWriter(savepath, true, System.Text.Encoding.Default))
+                                            {
+
+                                                sw1.WriteLine(djson);
+
+                                            };
+
+
+                                            string read_xml_text;
                                         using (var streamReader = new StreamReader(xmlin, Encoding.UTF8, false))
                                         {
                                             read_xml_text = streamReader.ReadToEnd();

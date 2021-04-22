@@ -116,6 +116,11 @@ namespace DownLoaderZakupki.Core.Jobs
                     serializer.Serialize(file, region44List);
                 }
 
+#if true && DEBUG
+                region44List = _fzSettings44.RegionsList;
+#endif
+
+
                 foreach (string region in region44List)
                 {
                     _logger.LogInformation($" Get {region} "); ;
@@ -192,6 +197,11 @@ namespace DownLoaderZakupki.Core.Jobs
                 }
 
                 //foreach (string region in _fz223Settings.RegionsList)
+
+#if true && DEBUG
+                region223List = _fzSettings223.RegionsList;
+#endif
+
                 foreach (string region in region223List)
                 {
                     foreach (string DirsDoc in _fzSettings223.DocDirList)
